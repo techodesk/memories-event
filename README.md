@@ -20,5 +20,10 @@ Then browse to `http://localhost:8000`.
 - `config/` – configuration samples
 - `src/` – PHP classes (currently minimal)
 
+## Event Status
+Events progress through three states: **Created**, **Started** and **Ended**. The
+status can be changed on the Edit Event page and is displayed in the events
+list.
+
 ## Development Notes
 Run `php -l public/*.php` before committing to ensure there are no syntax errors.
