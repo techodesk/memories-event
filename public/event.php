@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_event'])) {
         $headerImage = $uploader->upload($_FILES['header_image']['tmp_name'], $_FILES['header_image']['name']);
     }
     $stmt = $memPdo->prepare(
-        "UPDATE events SET event_name=?, event_date=?, event_location=?, description=?, status=?, header_image=? WHERE id=?"
+        "UPDATE events SET event_name=?, event_date=?, event_location=?, description=?, status=?, header_image=?, custom_css=? WHERE id=?"
     );
     $stmt->execute([
         $_POST['event_name'],
@@ -48,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_event'])) {
         $_POST['description'],
         $_POST['status'],
         $headerImage,
+        $_POST['custom_css'] ?? null,
         $event_id
     ]);
     header("Location: event.php?event_id=$event_id&updated=1");
@@ -153,6 +154,10 @@ include __DIR__ . '/../templates/topbar.php';
                 <div class="col-12">
                     <label class="form-label">Description</label>
                     <textarea name="description" rows="2" class="form-control"><?= htmlspecialchars($event['description']) ?></textarea>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Custom CSS</label>
+                    <textarea name="custom_css" rows="4" class="form-control" placeholder="Optional CSS overrides"><?= htmlspecialchars($event['custom_css'] ?? '') ?></textarea>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Status</label>
