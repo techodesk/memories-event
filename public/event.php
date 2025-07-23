@@ -18,6 +18,11 @@ $memPdo = new PDO("mysql:host={$memDbConf['host']};dbname={$memDbConf['dbname']}
 $emDbConf = $config['db_event_manager'];
 $emPdo = new PDO("mysql:host={$emDbConf['host']};dbname={$emDbConf['dbname']};charset={$emDbConf['charset']}", $emDbConf['user'], $emDbConf['pass'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 
+// --- FETCH EVENT ---
+$evt = $memPdo->prepare("SELECT * FROM events WHERE id=?");
+$evt->execute([$event_id]);
+$event = $evt->fetch(PDO::FETCH_ASSOC);
+
 // --- UPDATE EVENT DETAILS ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_event'])) {
     $uploader = new UploadManager($config['do_spaces']);
@@ -40,11 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_event'])) {
     header("Location: event.php?event_id=$event_id&updated=1");
     exit;
 }
-
-// --- FETCH EVENT ---
-$evt = $memPdo->prepare("SELECT * FROM events WHERE id=?");
-$evt->execute([$event_id]);
-$event = $evt->fetch(PDO::FETCH_ASSOC);
 
 // --- ADD GUEST(s) --- always allowed
 if (
