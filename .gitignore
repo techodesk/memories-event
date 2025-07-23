@@ -1,0 +1,55 @@
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Editor Files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Composer dependencies (optional, if you use vendor folder)
+vendor/
+composer.lock
+
+# Node dependencies (if you experiment with npm/yarn)
+node_modules/
+package-lock.json
+yarn.lock
+
+# PHPStorm & NetBeans
+nbproject/
+*.iml
+
+# Log files
+*.log
+
+# Uploaded files, cache, or temp files
+/tmp/
+.cache/
+uploads/
+public/uploads/
+*.bak
+
+# Ignore environment & secret config
+.env
+.env.*
+config/config.php
+config/*.local.php
+
+# Build outputs
+/dist/
+build/
+
+# Database dumps
+*.sql
+*.sql.gz
+
+# Assets you don’t want in git (e.g., generated)
+assets/build/
+assets/dist/
+
+# Sensitive files (update as needed)
+*.key
+*.pem
+*.crt

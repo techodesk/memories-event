@@ -1,0 +1,11 @@
+# Enable URL rewriting
+RewriteEngine On
+
+# Send all requests except real files/directories to index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)$ index.php?path=$1 [L,QSA]
+
+# Optionally force HTTPS (uncomment if needed)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
