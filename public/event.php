@@ -29,26 +29,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_event'])) {
     exit;
 }
 
-// --- FETCH EVENT ---
-$evt = $memPdo->prepare("SELECT * FROM events WHERE id=?");
-$evt->execute([$event_id]);
-$event = $evt->fetch(PDO::FETCH_ASSOC);
-
-// --- ADD GUEST(s) --- only when event is accepted
-if (
-    $_SERVER['REQUEST_METHOD'] === 'POST' &&
-    isset($_POST['add_guest_ids']) &&
-    ($event['status'] ?? '') === 'accepted'
-) {
+// --- ADD GUEST(s) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_guest_ids'])) {
     foreach ($_POST['add_guest_ids'] as $gid) {
+        // get invite_code for each guest
         $stmt2 = $emPdo->prepare("SELECT invite_code FROM guests WHERE id=?");
         $stmt2->execute([$gid]);
         $invite_code = $stmt2->fetchColumn();
-        $memPdo
-            ->prepare(
-                "INSERT IGNORE INTO event_guests (event_id, guest_id, invitation_code) VALUES (?, ?, ?)"
-            )
-            ->execute([$event_id, $gid, $invite_code]);
+        $memPdo->prepare("INSERT IGNORE INTO event_guests (event_id, guest_id, invitation_code) VALUES (?, ?, ?)")
+               ->execute([$event_id, $gid, $invite_code]);
     }
     header("Location: event.php?event_id=$event_id");
     exit;
@@ -62,8 +51,13 @@ if (isset($_GET['remove_guest'])) {
     exit;
 }
 
+// --- FETCH EVENT ---
+$evt = $memPdo->prepare("SELECT * FROM events WHERE id=?");
+$evt->execute([$event_id]);
+$event = $evt->fetch(PDO::FETCH_ASSOC);
+
 // --- CURRENT GUESTS ---
-$q = $memPdo->prepare("SELECT eg.*, g.name, g.email, g.invite_code FROM event_guests eg JOIN `{$emDbConf['dbname']}`.guests g ON eg.guest_id=g.id WHERE eg.event_id=?");
+$q = $memPdo->prepare("SELECT eg.*, g.name, g.email, g.invite_code FROM event_guests eg JOIN {$emDbConf['dbname']}.guests g ON eg.guest_id=g.id WHERE eg.event_id=?");
 $q->execute([$event_id]);
 $added_guests = $q->fetchAll(PDO::FETCH_ASSOC);
 
@@ -136,28 +130,24 @@ include __DIR__ . '/../templates/topbar.php';
             </table>
         </div>
 
-        <?php if (($event['status'] ?? '') === 'accepted'): ?>
-            <h5 class="mb-2 mt-4">Add Guests</h5>
-            <form method="post" class="mb-0">
-                <div class="row g-2">
-                    <div class="col-md-8">
-                        <select name="add_guest_ids[]" class="form-select" multiple size="6" required>
-                            <?php foreach ($all as $g): ?>
-                                <option value="<?= $g['id'] ?>">
-                                    <?= htmlspecialchars($g['name']) ?> (<?= htmlspecialchars($g['email']) ?>)
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="col-md-4 align-self-end">
-                        <button class="btn btn-accent px-4" type="submit">Add Selected</button>
-                    </div>
+        <h5 class="mb-2 mt-4">Add Guests</h5>
+        <form method="post" class="mb-0">
+            <div class="row g-2">
+                <div class="col-md-8">
+                    <select name="add_guest_ids[]" class="form-select" multiple size="6" required>
+                        <?php foreach ($all as $g): ?>
+                            <option value="<?= $g['id'] ?>">
+                                <?= htmlspecialchars($g['name']) ?> (<?= htmlspecialchars($g['email']) ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
-                <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
-            </form>
-        <?php else: ?>
-            <div class="alert alert-info mt-4">Event must be accepted before adding guests.</div>
-        <?php endif; ?>
+                <div class="col-md-4 align-self-end">
+                    <button class="btn btn-accent px-4" type="submit">Add Selected</button>
+                </div>
+            </div>
+            <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
+        </form>
     </div>
 </main>
 <?php include __DIR__ . '/../templates/footer.php'; ?>
