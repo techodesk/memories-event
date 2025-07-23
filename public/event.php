@@ -5,6 +5,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 $config = require __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../src/guests/guest_helpers.php';
 
 $event_id = isset($_GET['event_id']) ? intval($_GET['event_id']) : 0;
 if (!$event_id) die("Event ID missing!");
@@ -159,13 +160,7 @@ include __DIR__ . '/../templates/topbar.php';
             <form method="post" class="mb-0">
                 <div class="row g-2">
                     <div class="col-md-8">
-                        <select name="add_guest_ids[]" class="form-select" multiple size="6" required>
-                            <?php foreach ($all as $g): ?>
-                                <option value="<?= $g['id'] ?>">
-                                    <?= htmlspecialchars($g['name']) ?> (<?= htmlspecialchars($g['email']) ?>)
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <?php echo renderGuestSelectInput($all, [], 'add_guest_ids[]'); ?>
                     </div>
                     <div class="col-md-4 align-self-end">
                         <button class="btn btn-accent px-4" type="submit">Add Selected</button>
