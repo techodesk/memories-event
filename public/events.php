@@ -5,12 +5,16 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 $config = require __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../src/guests/GuestManager.php';
+require_once __DIR__ . '/../src/guests/guest_helpers.php';
 
 // --- DB Connections ---
 $memDbConf = $config['db_memories'];
 $memPdo = new PDO("mysql:host={$memDbConf['host']};dbname={$memDbConf['dbname']};charset={$memDbConf['charset']}", $memDbConf['user'], $memDbConf['pass'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 $emDbConf = $config['db_event_manager'];
 $emPdo = new PDO("mysql:host={$emDbConf['host']};dbname={$emDbConf['dbname']};charset={$emDbConf['charset']}", $emDbConf['user'], $emDbConf['pass'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+
+$guestManager = new GuestManager($emPdo, $memPdo);
 
 // --- ADD EVENT ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_name'])) {
@@ -26,13 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_name'])) {
 
     // --- Add selected guests (if any) ---
     if (!empty($_POST['guest_ids'])) {
-        foreach ($_POST['guest_ids'] as $gid) {
-            $stmt2 = $emPdo->prepare("SELECT invite_code FROM guests WHERE id=?");
-            $stmt2->execute([$gid]);
-            $invite_code = $stmt2->fetchColumn();
-            $memPdo->prepare("INSERT INTO event_guests (event_id, guest_id, invitation_code) VALUES (?, ?, ?)")
-                   ->execute([$event_id, $gid, $invite_code]);
-        }
+        $guestIds = array_map('intval', (array)$_POST['guest_ids']);
+        $guestManager->addGuestsToEvent($event_id, $guestIds);
     }
 
     header("Location: events");
@@ -52,7 +51,7 @@ $stmt = $memPdo->query("SELECT * FROM events ORDER BY event_date DESC, id DESC")
 $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // --- FETCH GUESTS (for add form) ---
-$all_guests = $emPdo->query("SELECT id, name, email FROM guests ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+$all_guests = $guestManager->fetchAllGuests();
 
 // --- Theming Stuff ---
 $page_title = "Events";
@@ -83,15 +82,7 @@ include __DIR__ . '/../templates/topbar.php';
                     <label class="form-label">Description</label>
                     <textarea name="description" rows="2" class="form-control"></textarea>
                 </div>
-<select class="form-select" name="guest_ids[]" id="guestSelect" multiple>
-    <?php foreach ($all_guests as $g): ?>
-        <option value="<?= $g['id'] ?>">
-            <?= htmlspecialchars((string)($g['name'] ?? '')) ?>
-            (<?= htmlspecialchars((string)($g['email'] ?? '-')) ?>)
-        </option>
-    <?php endforeach; ?>
-</select>
-
+                <?php echo renderGuestSelectInput($all_guests); ?>
 
                 <div class="col-12">
                     <button type="submit" class="btn btn-accent mt-2 px-4">Add Event</button>

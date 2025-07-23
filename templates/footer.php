@@ -1,16 +1,16 @@
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<!-- Select2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js?v=<?= time(); ?>"></script>
+<!-- Choices.js JS -->
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <script>
-$(function() {
-  $('#guestSelect').select2({
-    theme: 'bootstrap4', // Use 'bootstrap4' here!
-    placeholder: "Type guest name or email…",
-    width: '100%'
-  });
+document.addEventListener('DOMContentLoaded', function() {
+    var select = document.getElementById('guestSelect');
+    if (select) {
+        new Choices(select, {
+            removeItemButton: true,
+            searchPlaceholderValue: 'Type guest name or email…'
+        });
+    }
 });
 
 // Sidebar mobile toggle logic unchanged
