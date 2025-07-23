@@ -25,7 +25,7 @@ class GuestManager
      */
     public function fetchAllGuests(): array
     {
-        $stmt = $this->pdoEventManager->query("SELECT id, name, email FROM guests ORDER BY name");
+        $stmt = $this->pdoEventManager->query("SELECT id, name, email FROM guests WHERE rsvp_status='Accepted' ORDER BY name");
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
@@ -38,7 +38,7 @@ class GuestManager
     public function searchGuests(string $term): array
     {
         $stmt = $this->pdoEventManager->prepare(
-            "SELECT id, name, email FROM guests WHERE name LIKE ? OR email LIKE ? ORDER BY name"
+            "SELECT id, name, email FROM guests WHERE (name LIKE ? OR email LIKE ?) AND rsvp_status='Accepted' ORDER BY name"
         );
         $like = '%' . $term . '%';
         $stmt->execute([$like, $like]);
