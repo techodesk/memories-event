@@ -46,34 +46,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
+$page_title = 'Staff Login';
+include __DIR__ . '/../templates/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Staff Login – Event Manager</title>
-    <link rel="stylesheet" href="assets/style.css">
-    <style>
-        body { background: #f5f5f5; font-family: sans-serif; }
-        .login-container { max-width: 350px; margin: 6em auto; background: #fff; padding: 2em 2.5em 2em 2.5em; border-radius: 12px; box-shadow: 0 4px 24px #0001; }
-        .login-container h2 { text-align: center; }
-        .error { background: #ffd7d7; color: #a00; padding: 1em; margin-bottom: 1em; border-radius: 6px; text-align: center; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 10px; margin: 0.7em 0; border: 1px solid #ccc; border-radius: 4px; }
-        button[type="submit"] { width: 100%; padding: 10px; background: #673ab7; color: #fff; border: none; border-radius: 4px; font-weight: bold; }
-        button[type="submit"]:hover { background: #512da8; }
-    </style>
-</head>
-<body>
-    <div class="login-container">
-        <h2>Staff Login</h2>
+
+<div class="d-flex align-items-center justify-content-center" style="min-height:100vh;">
+    <div class="p-4" style="background: var(--card-bg); border-radius: var(--border-radius); box-shadow: 0 4px 24px #0001; min-width:320px;">
+        <h2 class="text-center mb-3">Staff Login</h2>
         <?php if ($error): ?>
-            <div class="error"><?= htmlspecialchars($error) ?></div>
+            <div class="alert alert-danger text-center py-2 mb-3">
+                <?= htmlspecialchars($error) ?>
+            </div>
         <?php endif; ?>
         <form method="POST" autocomplete="off">
-            <input type="text" name="username" placeholder="Username or Email" required autofocus>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Login</button>
+            <div class="mb-3">
+                <input type="text" name="username" class="form-control" placeholder="Username or Email" required autofocus>
+            </div>
+            <div class="mb-3">
+                <input type="password" name="password" class="form-control" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn btn-accent w-100">Login</button>
         </form>
     </div>
-</body>
-</html>
+</div>
+
+<?php include __DIR__ . '/../templates/footer.php'; ?>

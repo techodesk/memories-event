@@ -19,6 +19,17 @@ body, html {
     color: var(--text-main) !important;
 }
 a, a:visited { color: var(--accent); }
+.btn-accent {
+    background: var(--accent) !important;
+    color: #fff !important;
+    border-color: var(--accent) !important;
+}
+.btn-accent:hover,
+.btn-accent:focus {
+    background: var(--accent-soft) !important;
+    border-color: var(--accent-soft) !important;
+    color: #fff !important;
+}
 
 /* ----- SIDEBAR ----- */
 .sidebar {
