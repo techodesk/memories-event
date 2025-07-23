@@ -1,0 +1,1 @@
+ALTER TABLE events ADD COLUMN upload_folder VARCHAR(255) DEFAULT NULL;

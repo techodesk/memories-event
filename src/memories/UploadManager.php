@@ -24,6 +24,19 @@ class UploadManager
         $this->cdnUrl = rtrim($conf['cdn_url'] ?? '', '/');
     }
 
+    /**
+     * Create an empty folder in the bucket.
+     */
+    public function createFolder(string $folder): void
+    {
+        $folder = rtrim($this->folder . $folder, '/') . '/';
+        $this->client->putObject([
+            'Bucket' => $this->bucket,
+            'Key'    => $folder,
+            'Body'   => ''
+        ]);
+    }
+
     public function upload(string $path, string $filename): string
     {
         $key = $this->folder . uniqid('event_', true) . '_' . basename($filename);

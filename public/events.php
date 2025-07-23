@@ -41,6 +41,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_name'])) {
     ]);
     $event_id = $memPdo->lastInsertId();
 
+    // create DO folder for uploads
+    $folder = 'events/' . $event_id;
+    $uploader->createFolder($folder);
+    $memPdo->prepare("UPDATE events SET upload_folder=? WHERE id=?")
+        ->execute([$folder . '/', $event_id]);
+
     // --- Add selected guests (if any) ---
     if (!empty($_POST['guest_ids'])) {
         $guestIds = array_map('intval', (array)$_POST['guest_ids']);
