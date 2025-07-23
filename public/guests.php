@@ -32,26 +32,28 @@ $emPdo = new PDO(
 $evt = $memPdo->prepare("SELECT * FROM events WHERE id=?");
 $evt->execute([$event_id]);
 $event = $evt->fetch(PDO::FETCH_ASSOC);
-// ADD GUEST(s) when RSVP Accepted
+
+
+// ADD GUEST(s) when event is accepted
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST' &&
-    isset($_POST['add_guest_ids'])
+    isset($_POST['add_guest_ids']) &&
+    ($event['status'] ?? '') === 'accepted'
 ) {
     foreach ($_POST['add_guest_ids'] as $gid) {
-        $g = $emPdo->prepare("SELECT invitation_code, rsvp_status FROM guests WHERE id=?");
+        $g = $emPdo->prepare("SELECT invitation_code FROM guests WHERE id=?");
         $g->execute([$gid]);
-        $info = $g->fetch(PDO::FETCH_ASSOC);
-        if ($info && strcasecmp($info['rsvp_status'], 'Accepted') === 0) {
-            $stmt = $memPdo->prepare(
-                "INSERT INTO event_guests (event_id, guest_id, invitation_code) VALUES (?, ?, ?)"
-            );
-            $stmt->execute([$event_id, $gid, $info['invitation_code']]);
-        }
+        $code = $g->fetchColumn();
+        $stmt = $memPdo->prepare(
+            "INSERT INTO event_guests (event_id, guest_id, invitation_code) VALUES (?, ?, ?)"
+        );
+        $stmt->execute([$event_id, $gid, $code]);
+
     }
     header("Location: guests.php?event_id=" . $event_id);
     exit;
 }
-// REMOVE GUEST
+
 if (isset($_GET['remove_guest'])) {
     $stmt = $memPdo->prepare("DELETE FROM event_guests WHERE event_id=? AND guest_id=?");
     $stmt->execute([$event_id, intval($_GET['remove_guest'])]);
@@ -106,25 +108,7 @@ include __DIR__ . '/../templates/topbar.php';
                 </tbody>
             </table>
         </div>
-        
-            <h5 class="mb-2 mt-4">Add Guests</h5>
-            <form method="post" class="mb-0">
-                <div class="row g-2">
-                    <div class="col-md-8">
-                        <select name="add_guest_ids[]" class="form-select" multiple size="6" required>
-                            <?php foreach ($all as $g): ?>
-                                <option value="<?= $g['id'] ?>">
-                                    <?= htmlspecialchars($g['name']) ?> (<?= htmlspecialchars($g['email']) ?>)
-                                </option>
-                            <?php endforeach ?>
-                        </select>
-                    </div>
-                    <div class="col-md-4 align-self-end">
-                        <button class="btn btn-accent px-4" type="submit">Add Selected</button>
-                    </div>
-                </div>
-                <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
-            </form>
+
     </div>
 </main>
 <?php include __DIR__ . '/../templates/footer.php'; ?>

@@ -34,25 +34,27 @@ $evt = $memPdo->prepare("SELECT * FROM events WHERE id=?");
 $evt->execute([$event_id]);
 $event = $evt->fetch(PDO::FETCH_ASSOC);
 
-
-// --- ADD GUEST(s) --- only if RSVP is Accepted
+// --- ADD GUEST(s) --- only when event is accepted
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST' &&
-    isset($_POST['add_guest_ids'])
+    isset($_POST['add_guest_ids']) &&
+    ($event['status'] ?? '') === 'accepted'
 ) {
     foreach ($_POST['add_guest_ids'] as $gid) {
-        $stmt2 = $emPdo->prepare("SELECT invite_code, rsvp_status FROM guests WHERE id=?");
+        $stmt2 = $emPdo->prepare("SELECT invite_code FROM guests WHERE id=?");
         $stmt2->execute([$gid]);
-        $info = $stmt2->fetch(PDO::FETCH_ASSOC);
-        if ($info && strcasecmp($info['rsvp_status'], 'Accepted') === 0) {
-            $memPdo
-                ->prepare("INSERT IGNORE INTO event_guests (event_id, guest_id, invitation_code) VALUES (?, ?, ?)")
-                ->execute([$event_id, $gid, $info['invite_code']]);
-        }
+        $invite_code = $stmt2->fetchColumn();
+        $memPdo
+            ->prepare(
+                "INSERT IGNORE INTO event_guests (event_id, guest_id, invitation_code) VALUES (?, ?, ?)"
+            )
+            ->execute([$event_id, $gid, $invite_code]);
+
     }
     header("Location: event.php?event_id=$event_id");
     exit;
 }
+
 // --- REMOVE GUEST ---
 if (isset($_GET['remove_guest'])) {
     $stmt = $memPdo->prepare("DELETE FROM event_guests WHERE event_id=? AND guest_id=?");
@@ -135,6 +137,7 @@ include __DIR__ . '/../templates/topbar.php';
             </table>
         </div>
 
+
             <h5 class="mb-2 mt-4">Add Guests</h5>
             <form method="post" class="mb-0">
                 <div class="row g-2">
@@ -153,6 +156,7 @@ include __DIR__ . '/../templates/topbar.php';
                 </div>
                 <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
             </form>
+
     </div>
 </main>
 <?php include __DIR__ . '/../templates/footer.php'; ?>
