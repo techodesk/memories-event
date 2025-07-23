@@ -14,19 +14,39 @@ if (!$event_id) {
 
 // DB connections
 $memDbConf = $config['db_memories'];
-$memPdo = new PDO("mysql:host={$memDbConf['host']};dbname={$memDbConf['dbname']};charset={$memDbConf['charset']}", $memDbConf['user'], $memDbConf['pass'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+$memPdo = new PDO(
+    "mysql:host={$memDbConf['host']};dbname={$memDbConf['dbname']};charset={$memDbConf['charset']}",
+    $memDbConf['user'],
+    $memDbConf['pass'],
+    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+);
 $emDbConf = $config['db_event_manager'];
-$emPdo = new PDO("mysql:host={$emDbConf['host']};dbname={$emDbConf['dbname']};charset={$emDbConf['charset']}", $emDbConf['user'], $emDbConf['pass'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+$emPdo = new PDO(
+    "mysql:host={$emDbConf['host']};dbname={$emDbConf['dbname']};charset={$emDbConf['charset']}",
+    $emDbConf['user'],
+    $emDbConf['pass'],
+    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+);
 
-// ADD GUEST(s)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_guest_ids'])) {
+// Get event info
+$evt = $memPdo->prepare("SELECT * FROM events WHERE id=?");
+$evt->execute([$event_id]);
+$event = $evt->fetch(PDO::FETCH_ASSOC);
+// ADD GUEST(s) when RSVP Accepted
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['add_guest_ids'])
+) {
     foreach ($_POST['add_guest_ids'] as $gid) {
-        // Get invitation_code from event-manager
-        $g = $emPdo->prepare("SELECT invitation_code FROM guests WHERE id=?");
+        $g = $emPdo->prepare("SELECT invitation_code, rsvp_status FROM guests WHERE id=?");
         $g->execute([$gid]);
-        $code = $g->fetchColumn();
-        $stmt = $memPdo->prepare("INSERT INTO event_guests (event_id, guest_id, invitation_code) VALUES (?, ?, ?)");
-        $stmt->execute([$event_id, $gid, $code]);
+        $info = $g->fetch(PDO::FETCH_ASSOC);
+        if ($info && strcasecmp($info['rsvp_status'], 'Accepted') === 0) {
+            $stmt = $memPdo->prepare(
+                "INSERT INTO event_guests (event_id, guest_id, invitation_code) VALUES (?, ?, ?)"
+            );
+            $stmt->execute([$event_id, $gid, $info['invitation_code']]);
+        }
     }
     header("Location: guests.php?event_id=" . $event_id);
     exit;
@@ -39,20 +59,16 @@ if (isset($_GET['remove_guest'])) {
     exit;
 }
 
-// Get event info (optional)
-$evt = $memPdo->prepare("SELECT * FROM events WHERE id=?");
-$evt->execute([$event_id]);
-$event = $evt->fetch(PDO::FETCH_ASSOC);
 
 // Guests already in this event:
-$q = $memPdo->prepare("SELECT eg.*, g.name, g.email, g.invitation_code FROM event_guests eg JOIN {$emDbConf['dbname']}.guests g ON eg.guest_id=g.id WHERE eg.event_id=?");
+$q = $memPdo->prepare("SELECT eg.*, g.name, g.email, g.invitation_code FROM event_guests eg JOIN `{$emDbConf['dbname']}`.guests g ON eg.guest_id=g.id WHERE eg.event_id=?");
 $q->execute([$event_id]);
 $added_guests = $q->fetchAll(PDO::FETCH_ASSOC);
 
 // Guests NOT yet added
 $already = array_column($added_guests, 'guest_id');
 $already_ids = $already ? implode(',', $already) : '0';
-$all = $emPdo->query("SELECT id, name, email, invitation_code FROM guests WHERE id NOT IN ($already_ids)")->fetchAll(PDO::FETCH_ASSOC);
+$all = $emPdo->query("SELECT id, name, email, invitation_code FROM guests WHERE id NOT IN ($already_ids) AND rsvp_status='Accepted' ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
 
 $page_title = "Manage Guests";
 $is_staff = true;
@@ -91,24 +107,24 @@ include __DIR__ . '/../templates/topbar.php';
             </table>
         </div>
         
-        <h5 class="mb-2 mt-4">Add Guests</h5>
-        <form method="post" class="mb-0">
-            <div class="row g-2">
-                <div class="col-md-8">
-                    <select name="add_guest_ids[]" class="form-select" multiple size="6" required>
-                        <?php foreach ($all as $g): ?>
-                            <option value="<?= $g['id'] ?>">
-                                <?= htmlspecialchars($g['name']) ?> (<?= htmlspecialchars($g['email']) ?>)
-                            </option>
-                        <?php endforeach ?>
-                    </select>
+            <h5 class="mb-2 mt-4">Add Guests</h5>
+            <form method="post" class="mb-0">
+                <div class="row g-2">
+                    <div class="col-md-8">
+                        <select name="add_guest_ids[]" class="form-select" multiple size="6" required>
+                            <?php foreach ($all as $g): ?>
+                                <option value="<?= $g['id'] ?>">
+                                    <?= htmlspecialchars($g['name']) ?> (<?= htmlspecialchars($g['email']) ?>)
+                                </option>
+                            <?php endforeach ?>
+                        </select>
+                    </div>
+                    <div class="col-md-4 align-self-end">
+                        <button class="btn btn-accent px-4" type="submit">Add Selected</button>
+                    </div>
                 </div>
-                <div class="col-md-4 align-self-end">
-                    <button class="btn btn-accent px-4" type="submit">Add Selected</button>
-                </div>
-            </div>
-            <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
-        </form>
+                <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
+            </form>
     </div>
 </main>
 <?php include __DIR__ . '/../templates/footer.php'; ?>

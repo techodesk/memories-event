@@ -29,20 +29,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_event'])) {
     exit;
 }
 
-// --- ADD GUEST(s) ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_guest_ids'])) {
+// --- FETCH EVENT ---
+$evt = $memPdo->prepare("SELECT * FROM events WHERE id=?");
+$evt->execute([$event_id]);
+$event = $evt->fetch(PDO::FETCH_ASSOC);
+
+
+// --- ADD GUEST(s) --- only if RSVP is Accepted
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['add_guest_ids'])
+) {
     foreach ($_POST['add_guest_ids'] as $gid) {
-        // get invite_code for each guest
-        $stmt2 = $emPdo->prepare("SELECT invite_code FROM guests WHERE id=?");
+        $stmt2 = $emPdo->prepare("SELECT invite_code, rsvp_status FROM guests WHERE id=?");
         $stmt2->execute([$gid]);
-        $invite_code = $stmt2->fetchColumn();
-        $memPdo->prepare("INSERT IGNORE INTO event_guests (event_id, guest_id, invitation_code) VALUES (?, ?, ?)")
-               ->execute([$event_id, $gid, $invite_code]);
+        $info = $stmt2->fetch(PDO::FETCH_ASSOC);
+        if ($info && strcasecmp($info['rsvp_status'], 'Accepted') === 0) {
+            $memPdo
+                ->prepare("INSERT IGNORE INTO event_guests (event_id, guest_id, invitation_code) VALUES (?, ?, ?)")
+                ->execute([$event_id, $gid, $info['invite_code']]);
+        }
     }
     header("Location: event.php?event_id=$event_id");
     exit;
 }
-
 // --- REMOVE GUEST ---
 if (isset($_GET['remove_guest'])) {
     $stmt = $memPdo->prepare("DELETE FROM event_guests WHERE event_id=? AND guest_id=?");
@@ -51,20 +61,15 @@ if (isset($_GET['remove_guest'])) {
     exit;
 }
 
-// --- FETCH EVENT ---
-$evt = $memPdo->prepare("SELECT * FROM events WHERE id=?");
-$evt->execute([$event_id]);
-$event = $evt->fetch(PDO::FETCH_ASSOC);
-
 // --- CURRENT GUESTS ---
-$q = $memPdo->prepare("SELECT eg.*, g.name, g.email, g.invite_code FROM event_guests eg JOIN {$emDbConf['dbname']}.guests g ON eg.guest_id=g.id WHERE eg.event_id=?");
+$q = $memPdo->prepare("SELECT eg.*, g.name, g.email, g.invite_code FROM event_guests eg JOIN `{$emDbConf['dbname']}`.guests g ON eg.guest_id=g.id WHERE eg.event_id=?");
 $q->execute([$event_id]);
 $added_guests = $q->fetchAll(PDO::FETCH_ASSOC);
 
 // --- AVAILABLE GUESTS (not added yet) ---
 $already = array_column($added_guests, 'guest_id');
 $already_ids = $already ? implode(',', $already) : '0';
-$all = $emPdo->query("SELECT id, name, email, invite_code FROM guests WHERE id NOT IN ($already_ids) ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+$all = $emPdo->query("SELECT id, name, email, invite_code FROM guests WHERE id NOT IN ($already_ids) AND rsvp_status='Accepted' ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
 
 // --- Theming Stuff ---
 $page_title = "Edit Event";
@@ -130,24 +135,24 @@ include __DIR__ . '/../templates/topbar.php';
             </table>
         </div>
 
-        <h5 class="mb-2 mt-4">Add Guests</h5>
-        <form method="post" class="mb-0">
-            <div class="row g-2">
-                <div class="col-md-8">
-                    <select name="add_guest_ids[]" class="form-select" multiple size="6" required>
-                        <?php foreach ($all as $g): ?>
-                            <option value="<?= $g['id'] ?>">
-                                <?= htmlspecialchars($g['name']) ?> (<?= htmlspecialchars($g['email']) ?>)
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+            <h5 class="mb-2 mt-4">Add Guests</h5>
+            <form method="post" class="mb-0">
+                <div class="row g-2">
+                    <div class="col-md-8">
+                        <select name="add_guest_ids[]" class="form-select" multiple size="6" required>
+                            <?php foreach ($all as $g): ?>
+                                <option value="<?= $g['id'] ?>">
+                                    <?= htmlspecialchars($g['name']) ?> (<?= htmlspecialchars($g['email']) ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-4 align-self-end">
+                        <button class="btn btn-accent px-4" type="submit">Add Selected</button>
+                    </div>
                 </div>
-                <div class="col-md-4 align-self-end">
-                    <button class="btn btn-accent px-4" type="submit">Add Selected</button>
-                </div>
-            </div>
-            <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
-        </form>
+                <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
+            </form>
     </div>
 </main>
 <?php include __DIR__ . '/../templates/footer.php'; ?>
