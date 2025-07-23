@@ -127,6 +127,10 @@ include __DIR__ . '/../templates/topbar.php';
                     <label class="form-label">Location</label>
                     <input type="text" name="event_location" class="form-control" value="<?= htmlspecialchars($event['event_location']) ?>">
                 </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Public URL</label>
+                    <input type="text" readonly class="form-control" value="<?= htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/e/' . $event['public_id']) ?>">
+                </div>
                 <div class="col-12 col-md-5">
                     <label class="form-label">Header Image</label>
                     <?php if (!empty($event['header_image'])): ?>

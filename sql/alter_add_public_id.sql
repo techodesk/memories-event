@@ -1,0 +1,2 @@
+ALTER TABLE events
+    ADD COLUMN public_id VARCHAR(32) NOT NULL UNIQUE AFTER id;

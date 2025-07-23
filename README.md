@@ -6,7 +6,8 @@ A simple PHP application for managing events and guests. This project is a small
 1. Copy `config/config-example.php` to `config/config.php` and adjust the database credentials and DigitalOcean Spaces information.
 2. Run `composer install` to fetch the AWS SDK used for uploading images to DigitalOcean Spaces.
 3. Make sure the required MySQL databases exist and the credentials match your setup.
-4. The guest selector relies on the Choices.js library loaded from a CDN. Ensure the host running the app can access the CDN or adjust the paths accordingly.
+4. Run the SQL in `sql/alter_add_public_id.sql` to add the `public_id` column used for public event links.
+5. The guest selector relies on the Choices.js library loaded from a CDN. Ensure the host running the app can access the CDN or adjust the paths accordingly.
 
 ## Running
 Use PHP's built-in server from the project root:
