@@ -7,7 +7,9 @@ A simple PHP application for managing events and guests. This project is a small
 2. Run `composer install` to fetch required PHP dependencies such as the AWS SDK and QR code library.
 3. Make sure the required MySQL databases exist and the credentials match your setup.
 4. Run the SQL in `sql/alter_add_public_id.sql` to add the `public_id` column used for public event links.
-5. Run `sql/alter_add_header_image.sql` and `sql/alter_add_custom_css.sql` if upgrading from an older database.
+
+5. Run the SQL in `sql/alter_add_upload_folder.sql` to add the `upload_folder` column storing each event's DigitalOcean folder path.
+
 6. The guest selector relies on the Choices.js library loaded from a CDN. Ensure the host running the app can access the CDN or adjust the paths accordingly.
 
 ## Running
