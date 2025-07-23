@@ -49,6 +49,7 @@ if (
                 "INSERT IGNORE INTO event_guests (event_id, guest_id, invitation_code) VALUES (?, ?, ?)"
             )
             ->execute([$event_id, $gid, $invite_code]);
+
     }
     header("Location: event.php?event_id=$event_id");
     exit;
@@ -70,7 +71,7 @@ $added_guests = $q->fetchAll(PDO::FETCH_ASSOC);
 // --- AVAILABLE GUESTS (not added yet) ---
 $already = array_column($added_guests, 'guest_id');
 $already_ids = $already ? implode(',', $already) : '0';
-$all = $emPdo->query("SELECT id, name, email, invite_code FROM guests WHERE id NOT IN ($already_ids) ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+$all = $emPdo->query("SELECT id, name, email, invite_code FROM guests WHERE id NOT IN ($already_ids) AND rsvp_status='Accepted' ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
 
 // --- Theming Stuff ---
 $page_title = "Edit Event";
@@ -136,7 +137,7 @@ include __DIR__ . '/../templates/topbar.php';
             </table>
         </div>
 
-        <?php if (($event['status'] ?? '') === 'accepted'): ?>
+
             <h5 class="mb-2 mt-4">Add Guests</h5>
             <form method="post" class="mb-0">
                 <div class="row g-2">
@@ -155,9 +156,7 @@ include __DIR__ . '/../templates/topbar.php';
                 </div>
                 <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
             </form>
-        <?php else: ?>
-            <div class="alert alert-info mt-4">Event must be accepted before adding guests.</div>
-        <?php endif; ?>
+
     </div>
 </main>
 <?php include __DIR__ . '/../templates/footer.php'; ?>

@@ -33,6 +33,7 @@ $evt = $memPdo->prepare("SELECT * FROM events WHERE id=?");
 $evt->execute([$event_id]);
 $event = $evt->fetch(PDO::FETCH_ASSOC);
 
+
 // ADD GUEST(s) when event is accepted
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST' &&
@@ -47,11 +48,12 @@ if (
             "INSERT INTO event_guests (event_id, guest_id, invitation_code) VALUES (?, ?, ?)"
         );
         $stmt->execute([$event_id, $gid, $code]);
+
     }
     header("Location: guests.php?event_id=" . $event_id);
     exit;
 }
-// REMOVE GUEST
+
 if (isset($_GET['remove_guest'])) {
     $stmt = $memPdo->prepare("DELETE FROM event_guests WHERE event_id=? AND guest_id=?");
     $stmt->execute([$event_id, intval($_GET['remove_guest'])]);
@@ -68,7 +70,7 @@ $added_guests = $q->fetchAll(PDO::FETCH_ASSOC);
 // Guests NOT yet added
 $already = array_column($added_guests, 'guest_id');
 $already_ids = $already ? implode(',', $already) : '0';
-$all = $emPdo->query("SELECT id, name, email, invitation_code FROM guests WHERE id NOT IN ($already_ids)")->fetchAll(PDO::FETCH_ASSOC);
+$all = $emPdo->query("SELECT id, name, email, invitation_code FROM guests WHERE id NOT IN ($already_ids) AND rsvp_status='Accepted' ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
 
 $page_title = "Manage Guests";
 $is_staff = true;
@@ -106,29 +108,7 @@ include __DIR__ . '/../templates/topbar.php';
                 </tbody>
             </table>
         </div>
-        
-        <?php if (($event['status'] ?? '') === 'accepted'): ?>
-            <h5 class="mb-2 mt-4">Add Guests</h5>
-            <form method="post" class="mb-0">
-                <div class="row g-2">
-                    <div class="col-md-8">
-                        <select name="add_guest_ids[]" class="form-select" multiple size="6" required>
-                            <?php foreach ($all as $g): ?>
-                                <option value="<?= $g['id'] ?>">
-                                    <?= htmlspecialchars($g['name']) ?> (<?= htmlspecialchars($g['email']) ?>)
-                                </option>
-                            <?php endforeach ?>
-                        </select>
-                    </div>
-                    <div class="col-md-4 align-self-end">
-                        <button class="btn btn-accent px-4" type="submit">Add Selected</button>
-                    </div>
-                </div>
-                <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
-            </form>
-        <?php else: ?>
-            <div class="alert alert-info mt-4">Event must be accepted before adding guests.</div>
-        <?php endif; ?>
+
     </div>
 </main>
 <?php include __DIR__ . '/../templates/footer.php'; ?>
