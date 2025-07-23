@@ -156,18 +156,22 @@ include __DIR__ . '/../templates/topbar.php';
         </div>
 
 
-            <h5 class="mb-2 mt-4">Add Guests</h5>
-            <form method="post" class="mb-0">
-                <div class="row g-2">
-                    <div class="col-md-8">
-                        <?php echo renderGuestSelectInput($all, [], 'add_guest_ids[]'); ?>
+            <?php if (($event['status'] ?? '') === 'accepted'): ?>
+                <h5 class="mb-2 mt-4">Add Guests</h5>
+                <form method="post" class="mb-0">
+                    <div class="row g-2">
+                        <div class="col-md-8">
+                            <?php echo renderGuestSelectInput($all, [], 'add_guest_ids[]'); ?>
+                        </div>
+                        <div class="col-md-4 align-self-end">
+                            <button class="btn btn-accent px-4" type="submit">Add Selected</button>
+                        </div>
                     </div>
-                    <div class="col-md-4 align-self-end">
-                        <button class="btn btn-accent px-4" type="submit">Add Selected</button>
-                    </div>
-                </div>
-                <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
-            </form>
+                    <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
+                </form>
+            <?php else: ?>
+                <div class="alert alert-info mt-4">Event must be accepted before adding guests.</div>
+            <?php endif; ?>
 
     </div>
 </main>
