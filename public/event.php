@@ -120,4 +120,34 @@ include __DIR__ . '/../templates/topbar.php';
                         <td><?= htmlspecialchars($g['email']) ?></td>
                         <td><?= htmlspecialchars($g['invite_code']) ?></td>
                         <td>
-                            <a href="?event_id=<?= $event_id ?>&remove_guest=<?= $g['guest_id'] ?>" class="btn btn-danger btn-sm" onclick="_]()_
+                            <a href="?event_id=<?= $event_id ?>&remove_guest=<?= $g['guest_id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Remove guest?')">
+                                <i class="bi bi-x"></i>
+                            </a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <h5 class="mb-2 mt-4">Add Guests</h5>
+        <form method="post" class="mb-0">
+            <div class="row g-2">
+                <div class="col-md-8">
+                    <select name="add_guest_ids[]" class="form-select" multiple size="6" required>
+                        <?php foreach ($all as $g): ?>
+                            <option value="<?= $g['id'] ?>">
+                                <?= htmlspecialchars($g['name']) ?> (<?= htmlspecialchars($g['email']) ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-4 align-self-end">
+                    <button class="btn btn-accent px-4" type="submit">Add Selected</button>
+                </div>
+            </div>
+            <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
+        </form>
+    </div>
+</main>
+<?php include __DIR__ . '/../templates/footer.php'; ?>

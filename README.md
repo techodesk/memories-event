@@ -1,1 +1,23 @@
-# memories-event
+# Memories Event Manager
+
+A simple PHP application for managing events and guests. This project is a small demonstration used to track event details and invited guests.
+
+## Setup
+1. Copy `config/config-example.php` to `config/config.php` and adjust the database credentials and DigitalOcean Spaces information.
+2. Make sure the required MySQL databases exist and the credentials match your setup.
+
+## Running
+Use PHP's built-in server from the project root:
+```bash
+php -S localhost:8000 -t public
+```
+Then browse to `http://localhost:8000`.
+
+## Directory Structure
+- `public/` – entry point scripts and frontend pages
+- `templates/` – shared page fragments
+- `config/` – configuration samples
+- `src/` – PHP classes (currently minimal)
+
+## Development Notes
+Run `php -l public/*.php` before committing to ensure there are no syntax errors.
