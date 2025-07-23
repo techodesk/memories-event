@@ -5,6 +5,7 @@ A simple PHP application for managing events and guests. This project is a small
 ## Setup
 1. Copy `config/config-example.php` to `config/config.php` and adjust the database credentials and DigitalOcean Spaces information.
 2. Make sure the required MySQL databases exist and the credentials match your setup.
+3. The guest selector relies on the Choices.js library loaded from a CDN. Ensure the host running the app can access the CDN or adjust the paths accordingly.
 
 ## Running
 Use PHP's built-in server from the project root:
