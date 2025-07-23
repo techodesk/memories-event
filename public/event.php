@@ -5,7 +5,9 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 $config = require __DIR__ . '/../config/config.php';
+require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/guests/guest_helpers.php';
+require_once __DIR__ . '/../src/memories/UploadManager.php';
 
 $event_id = isset($_GET['event_id']) ? intval($_GET['event_id']) : 0;
 if (!$event_id) die("Event ID missing!");
@@ -18,8 +20,13 @@ $emPdo = new PDO("mysql:host={$emDbConf['host']};dbname={$emDbConf['dbname']};ch
 
 // --- UPDATE EVENT DETAILS ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_event'])) {
+    $uploader = new UploadManager($config['do_spaces']);
+    $headerImage = $event['header_image'] ?? null;
+    if (isset($_FILES['header_image']) && is_uploaded_file($_FILES['header_image']['tmp_name'])) {
+        $headerImage = $uploader->upload($_FILES['header_image']['tmp_name'], $_FILES['header_image']['name']);
+    }
     $stmt = $memPdo->prepare(
-        "UPDATE events SET event_name=?, event_date=?, event_location=?, description=?, status=? WHERE id=?"
+        "UPDATE events SET event_name=?, event_date=?, event_location=?, description=?, status=?, header_image=? WHERE id=?"
     );
     $stmt->execute([
         $_POST['event_name'],
@@ -27,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_event'])) {
         $_POST['event_location'],
         $_POST['description'],
         $_POST['status'],
+        $headerImage,
         $event_id
     ]);
     header("Location: event.php?event_id=$event_id&updated=1");
@@ -104,7 +112,7 @@ include __DIR__ . '/../templates/topbar.php';
 <main class="dashboard-main">
     <div class="dashboard-section mb-4">
         <h2 class="mb-3 section-title">Edit Event</h2>
-        <form method="POST" class="mb-4">
+        <form method="POST" enctype="multipart/form-data" class="mb-4">
             <input type="hidden" name="update_event" value="1">
             <div class="row g-3 align-items-end">
                 <div class="col-md-4">
@@ -118,6 +126,13 @@ include __DIR__ . '/../templates/topbar.php';
                 <div class="col-md-5">
                     <label class="form-label">Location</label>
                     <input type="text" name="event_location" class="form-control" value="<?= htmlspecialchars($event['event_location']) ?>">
+                </div>
+                <div class="col-12 col-md-5">
+                    <label class="form-label">Header Image</label>
+                    <?php if (!empty($event['header_image'])): ?>
+                        <img src="<?= htmlspecialchars($event['header_image']) ?>" class="img-fluid mb-2" alt="header">
+                    <?php endif; ?>
+                    <input type="file" name="header_image" class="form-control" accept="image/*">
                 </div>
                 <div class="col-12">
                     <label class="form-label">Description</label>
