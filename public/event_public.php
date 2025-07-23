@@ -29,13 +29,18 @@ if (!$event) {
 $page_title = $event['event_name'];
 include __DIR__ . '/../templates/header.php';
 ?>
-<main class="container py-5">
-    <h1 class="mb-3 text-center"><?= htmlspecialchars($event['event_name']) ?></h1>
-    <?php if (!empty($event['header_image'])): ?>
-        <img src="<?= htmlspecialchars($event['header_image']) ?>" class="img-fluid mb-3" alt="header">
-    <?php endif; ?>
-    <p><strong>Date:</strong> <?= htmlspecialchars($event['event_date']) ?></p>
-    <p><strong>Location:</strong> <?= htmlspecialchars($event['event_location']) ?></p>
-    <p><?= nl2br(htmlspecialchars($event['description'])) ?></p>
+<?php if (!empty($event['custom_css'])): ?>
+    <style><?= $event['custom_css'] ?></style>
+<?php endif; ?>
+<main class="d-flex align-items-center justify-content-center" style="min-height:100vh;">
+    <div class="p-4" style="background: var(--card-bg); border-radius: var(--border-radius); max-width:720px; width:100%;">
+        <?php if (!empty($event['header_image'])): ?>
+            <img src="<?= htmlspecialchars($event['header_image']) ?>" class="img-fluid mb-3" alt="header" style="border-radius:var(--border-radius);">
+        <?php endif; ?>
+        <h1 class="mb-3 text-center"><?= htmlspecialchars($event['event_name']) ?></h1>
+        <p><strong>Date:</strong> <?= htmlspecialchars($event['event_date']) ?></p>
+        <p><strong>Location:</strong> <?= htmlspecialchars($event['event_location']) ?></p>
+        <p><?= nl2br(htmlspecialchars($event['description'])) ?></p>
+    </div>
 </main>
 <?php include __DIR__ . '/../templates/footer.php'; ?>
