@@ -64,9 +64,26 @@ if (isset($_GET['remove_guest'])) {
 }
 
 // --- CURRENT GUESTS ---
-$q = $memPdo->prepare("SELECT eg.*, g.name, g.email, g.invite_code FROM event_guests eg JOIN `{$emDbConf['dbname']}`.guests g ON eg.guest_id=g.id WHERE eg.event_id=?");
-$q->execute([$event_id]);
-$added_guests = $q->fetchAll(PDO::FETCH_ASSOC);
+$idsStmt = $memPdo->prepare("SELECT guest_id FROM event_guests WHERE event_id=?");
+$idsStmt->execute([$event_id]);
+$guestIds = $idsStmt->fetchAll(PDO::FETCH_COLUMN);
+$added_guests = [];
+if ($guestIds) {
+    $placeholders = implode(',', array_fill(0, count($guestIds), '?'));
+    $gStmt = $emPdo->prepare("SELECT id, name, email, invite_code FROM guests WHERE id IN ($placeholders)");
+    $gStmt->execute($guestIds);
+    $info = [];
+    foreach ($gStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $info[$row['id']] = $row;
+    }
+    foreach ($guestIds as $gid) {
+        if (isset($info[$gid])) {
+            $row = $info[$gid];
+            $row['guest_id'] = $gid;
+            $added_guests[] = $row;
+        }
+    }
+}
 
 // --- AVAILABLE GUESTS (not added yet) ---
 $already = array_column($added_guests, 'guest_id');
