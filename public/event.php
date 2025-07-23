@@ -23,6 +23,14 @@ $evt = $memPdo->prepare("SELECT * FROM events WHERE id=?");
 $evt->execute([$event_id]);
 $event = $evt->fetch(PDO::FETCH_ASSOC);
 
+// --- Regenerate Public ID ---
+if (isset($_GET['regen_public_id'])) {
+    $newId = bin2hex(random_bytes(8));
+    $memPdo->prepare("UPDATE events SET public_id=? WHERE id=?")
+        ->execute([$newId, $event_id]);
+    $event['public_id'] = $newId;
+}
+
 // --- UPDATE EVENT DETAILS ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_event'])) {
     $uploader = new UploadManager($config['do_spaces']);
@@ -129,7 +137,11 @@ include __DIR__ . '/../templates/topbar.php';
                 </div>
                 <div class="col-12 col-md-6">
                     <label class="form-label">Public URL</label>
-                    <input type="text" readonly class="form-control" value="<?= htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/e/' . $event['public_id']) ?>">
+                    <div class="input-group">
+                        <input type="text" readonly class="form-control" value="<?= htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/e/' . $event['public_id']) ?>">
+                        <a href="?event_id=<?= $event_id ?>&regen_public_id=1" class="btn btn-outline-secondary">Regenerate</a>
+                    </div>
+                    <img src="qr.php?public_id=<?= urlencode($event['public_id']) ?>" alt="QR" width="150" height="150" class="mt-2">
                 </div>
                 <div class="col-12 col-md-5">
                     <label class="form-label">Header Image</label>
