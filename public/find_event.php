@@ -28,25 +28,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $page_title = 'Find Event';
 include __DIR__ . '/../templates/header.php';
 ?>
-<main class="container py-5" style="max-width:420px;">
-    <h1 class="mb-3 text-center">Find Your Event</h1>
-    <form method="post" class="mb-4">
-        <div class="mb-3">
-            <label class="form-label">Invite Code</label>
-            <input type="text" name="invite_code" class="form-control" required>
-        </div>
-        <?php if ($error): ?>
-            <div class="alert alert-danger py-2"><?= htmlspecialchars($error) ?></div>
+<div class="d-flex align-items-center justify-content-center" style="min-height:100vh;">
+    <div class="p-4" style="background: var(--card-bg); border-radius: var(--border-radius); box-shadow: 0 4px 24px #0001; max-width:420px; width:100%;">
+        <h2 class="mb-3 text-center">Find Your Event</h2>
+        <form method="post" class="mb-4">
+            <div class="mb-3">
+                <label class="form-label">Invite Code</label>
+                <input type="text" name="invite_code" class="form-control" required>
+            </div>
+            <?php if ($error): ?>
+                <div class="alert alert-danger py-2 text-center mb-3"><?= htmlspecialchars($error) ?></div>
+            <?php endif; ?>
+            <button type="submit" class="btn btn-accent w-100">Search</button>
+        </form>
+        <?php if ($event): ?>
+            <div class="card p-3" style="background: var(--sidebar-bg);">
+                <h5><?= htmlspecialchars($event['event_name']) ?></h5>
+                <p class="mb-1"><strong>Date:</strong> <?= htmlspecialchars($event['event_date']) ?></p>
+                <p class="mb-2"><strong>Location:</strong> <?= htmlspecialchars($event['event_location']) ?></p>
+                <a href="/e/<?= urlencode($event['public_id']) ?>" class="btn btn-accent">Open Event Page</a>
+            </div>
         <?php endif; ?>
-        <button type="submit" class="btn btn-accent w-100">Search</button>
-    </form>
-    <?php if ($event): ?>
-        <div class="card p-3" style="background: var(--card-bg);">
-            <h5><?= htmlspecialchars($event['event_name']) ?></h5>
-            <p class="mb-1"><strong>Date:</strong> <?= htmlspecialchars($event['event_date']) ?></p>
-            <p class="mb-2"><strong>Location:</strong> <?= htmlspecialchars($event['event_location']) ?></p>
-            <a href="/e/<?= urlencode($event['public_id']) ?>" class="btn btn-accent">Open Event Page</a>
-        </div>
-    <?php endif; ?>
-</main>
+    </div>
+</div>
 <?php include __DIR__ . '/../templates/footer.php'; ?>

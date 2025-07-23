@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_name'])) {
     }
     $publicId = bin2hex(random_bytes(8));
     $stmt = $memPdo->prepare(
-        "INSERT INTO events (public_id, event_name, event_date, event_location, description, created_by, status, header_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        "INSERT INTO events (public_id, event_name, event_date, event_location, description, created_by, status, header_image, custom_css) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
     $stmt->execute([
         $publicId,
@@ -37,7 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_name'])) {
         $_POST['description'],
         $_SESSION['user_id'],
         'Created',
-        $headerImage
+        $headerImage,
+        null
     ]);
     $event_id = $memPdo->lastInsertId();
 
