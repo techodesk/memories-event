@@ -13,9 +13,22 @@ switch ($path) {
         require 'logout.php'; break;
     case 'guest_portal':
         require 'guest_portal.php'; break;
-	case 'guests':
+    case 'guests':
         require 'guests.php'; break;
+    case 'find_event':
+        require 'find_event.php'; break;
     default:
-        http_response_code(404);
-        echo "404 Not Found";
+        // handled below
+        break;
+}
+
+if (preg_match('#^e/([A-Za-z0-9]+)$#', $path, $m)) {
+    $_GET['public_id'] = $m[1];
+    require 'event_public.php';
+    return;
+}
+
+if ($path !== '' && !in_array($path, ['dashboard','events','login','logout','guest_portal','guests','find_event'])) {
+    http_response_code(404);
+    echo "404 Not Found";
 }

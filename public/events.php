@@ -25,10 +25,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_name'])) {
     if (isset($_FILES['header_image']) && is_uploaded_file($_FILES['header_image']['tmp_name'])) {
         $headerImage = $uploader->upload($_FILES['header_image']['tmp_name'], $_FILES['header_image']['name']);
     }
+    $publicId = bin2hex(random_bytes(8));
     $stmt = $memPdo->prepare(
-        "INSERT INTO events (event_name, event_date, event_location, description, created_by, status, header_image) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        "INSERT INTO events (public_id, event_name, event_date, event_location, description, created_by, status, header_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     );
     $stmt->execute([
+        $publicId,
         $_POST['event_name'],
         $_POST['event_date'],
         $_POST['event_location'],
