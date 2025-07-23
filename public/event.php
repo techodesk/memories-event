@@ -18,12 +18,15 @@ $emPdo = new PDO("mysql:host={$emDbConf['host']};dbname={$emDbConf['dbname']};ch
 
 // --- UPDATE EVENT DETAILS ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_event'])) {
-    $stmt = $memPdo->prepare("UPDATE events SET event_name=?, event_date=?, event_location=?, description=? WHERE id=?");
+    $stmt = $memPdo->prepare(
+        "UPDATE events SET event_name=?, event_date=?, event_location=?, description=?, status=? WHERE id=?"
+    );
     $stmt->execute([
         $_POST['event_name'],
         $_POST['event_date'],
         $_POST['event_location'],
         $_POST['description'],
+        $_POST['status'],
         $event_id
     ]);
     header("Location: event.php?event_id=$event_id&updated=1");
@@ -35,11 +38,10 @@ $evt = $memPdo->prepare("SELECT * FROM events WHERE id=?");
 $evt->execute([$event_id]);
 $event = $evt->fetch(PDO::FETCH_ASSOC);
 
-// --- ADD GUEST(s) --- only when event is accepted
+// --- ADD GUEST(s) --- always allowed
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST' &&
-    isset($_POST['add_guest_ids']) &&
-    ($event['status'] ?? '') === 'accepted'
+    isset($_POST['add_guest_ids'])
 ) {
     foreach ($_POST['add_guest_ids'] as $gid) {
         $stmt2 = $emPdo->prepare("SELECT invite_code FROM guests WHERE id=?");
@@ -121,6 +123,14 @@ include __DIR__ . '/../templates/topbar.php';
                     <label class="form-label">Description</label>
                     <textarea name="description" rows="2" class="form-control"><?= htmlspecialchars($event['description']) ?></textarea>
                 </div>
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <?php foreach (['Created', 'Started', 'Ended'] as $st): ?>
+                            <option value="<?= $st ?>"<?= $event['status'] === $st ? ' selected' : '' ?>><?= $st ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
                 <div class="col-12">
                     <button type="submit" class="btn btn-accent mt-2 px-4">Save Changes</button>
                 </div>
@@ -156,22 +166,18 @@ include __DIR__ . '/../templates/topbar.php';
         </div>
 
 
-            <?php if (($event['status'] ?? '') === 'accepted'): ?>
-                <h5 class="mb-2 mt-4">Add Guests</h5>
-                <form method="post" class="mb-0">
-                    <div class="row g-2">
-                        <div class="col-md-8">
-                            <?php echo renderGuestSelectInput($all, [], 'add_guest_ids[]'); ?>
-                        </div>
-                        <div class="col-md-4 align-self-end">
-                            <button class="btn btn-accent px-4" type="submit">Add Selected</button>
-                        </div>
-                    </div>
-                    <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
-                </form>
-            <?php else: ?>
-                <div class="alert alert-info mt-4">Event must be accepted before adding guests.</div>
-            <?php endif; ?>
+        <h5 class="mb-2 mt-4">Add Guests</h5>
+        <form method="post" class="mb-0">
+            <div class="row g-2">
+                <div class="col-md-8">
+                    <?php echo renderGuestSelectInput($all, [], 'add_guest_ids[]'); ?>
+                </div>
+                <div class="col-md-4 align-self-end">
+                    <button class="btn btn-accent px-4" type="submit">Add Selected</button>
+                </div>
+            </div>
+            <small class="text-secondary mt-2 d-block">Hold Ctrl/Cmd to select multiple guests.</small>
+        </form>
 
     </div>
 </main>

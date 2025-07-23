@@ -18,13 +18,16 @@ $guestManager = new GuestManager($emPdo, $memPdo);
 
 // --- ADD EVENT ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_name'])) {
-    $stmt = $memPdo->prepare("INSERT INTO events (event_name, event_date, event_location, description, created_by) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $memPdo->prepare(
+        "INSERT INTO events (event_name, event_date, event_location, description, created_by, status) VALUES (?, ?, ?, ?, ?, ?)"
+    );
     $stmt->execute([
         $_POST['event_name'],
         $_POST['event_date'],
         $_POST['event_location'],
         $_POST['description'],
-        $_SESSION['user_id']
+        $_SESSION['user_id'],
+        'Created'
     ]);
     $event_id = $memPdo->lastInsertId();
 
@@ -97,6 +100,7 @@ include __DIR__ . '/../templates/topbar.php';
                         <th>Date</th>
                         <th>Location</th>
                         <th>Description</th>
+                        <th>Status</th>
                         <th style="width:120px;">Action</th>
                     </tr>
                 </thead>
@@ -107,6 +111,7 @@ include __DIR__ . '/../templates/topbar.php';
                         <td><?= htmlspecialchars($event['event_date']) ?></td>
                         <td><?= htmlspecialchars($event['event_location']) ?></td>
                         <td><?= htmlspecialchars($event['description']) ?></td>
+                        <td><?= htmlspecialchars($event['status'] ?? '') ?></td>
                         <td>
                             <a href="event.php?event_id=<?= $event['id'] ?>" class="btn btn-accent btn-sm">Edit</a>
                             <a href="events.php?delete=<?= $event['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Delete this event?')"><i class="bi bi-trash"></i></a>

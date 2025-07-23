@@ -34,11 +34,10 @@ $evt->execute([$event_id]);
 $event = $evt->fetch(PDO::FETCH_ASSOC);
 
 
-// ADD GUEST(s) when event is accepted
+// ADD GUEST(s)
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST' &&
-    isset($_POST['add_guest_ids']) &&
-    ($event['status'] ?? '') === 'accepted'
+    isset($_POST['add_guest_ids'])
 ) {
     foreach ($_POST['add_guest_ids'] as $gid) {
         $g = $emPdo->prepare("SELECT invitation_code FROM guests WHERE id=?");
