@@ -37,8 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['title'], $_POST['cont
     }
     $imageUrl = $images[0] ?? null;
     $slug = bin2hex(random_bytes(8));
-    $stmt = $pdo->prepare('INSERT INTO news (slug, title, content, image_url, image_urls) VALUES (?, ?, ?, ?, ?)');
-    $stmt->execute([$slug, $_POST['title'], $_POST['content'], $imageUrl, json_encode($images)]);
+    $contentPos = count($images);
+    $stmt = $pdo->prepare('INSERT INTO news (slug, title, content, image_url, image_urls, content_position) VALUES (?, ?, ?, ?, ?, ?)');
+    $stmt->execute([$slug, $_POST['title'], $_POST['content'], $imageUrl, json_encode($images), $contentPos]);
     header('Location: news_admin');
     exit;
 }
@@ -65,7 +66,7 @@ include __DIR__ . '/../templates/topbar.php';
                 <input type="file" name="images[]" class="form-control" accept="image/*" multiple>
             </div>
             <div class="mb-3">
-                <label class="form-label">Content</label>
+                <label class="form-label">Content (HTML allowed)</label>
                 <textarea name="content" rows="3" class="form-control"></textarea>
             </div>
             <button type="submit" class="btn btn-accent">Create</button>
