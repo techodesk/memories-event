@@ -5,6 +5,7 @@ session_start();
 $config = require __DIR__ . '/../config/config.php';
 require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/memories/UploadManager.php';
+require_once __DIR__ . '/../src/memories/MediaProcessor.php';
 
 $sessionId = $_SESSION['guest_session'] ?? null;
 if (!$sessionId) {
@@ -48,11 +49,19 @@ $eventId = $event['id'] ?? 0;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_post'])) {
     if (isset($_FILES['media']) && is_uploaded_file($_FILES['media']['tmp_name'])) {
         $uploader = new UploadManager($config['do_spaces']);
-        $fileUrl = $uploader->upload($_FILES['media']['tmp_name'], $_FILES['media']['name']);
-        $stmt = $memPdo->prepare(
-            'INSERT INTO event_posts (event_id, session_id, file_url, caption) VALUES (?, ?, ?, ?)'
+        $processor = new MediaProcessor($uploader, __DIR__ . '/../uploads');
+        $fileUrl = $processor->processAndUpload(
+            $eventId,
+            $event['upload_folder'] ?? '',
+            $_FILES['media'],
+            $sessionId
         );
-        $stmt->execute([$eventId, $sessionId, $fileUrl, $_POST['caption'] ?? null]);
+        if ($fileUrl) {
+            $stmt = $memPdo->prepare(
+                'INSERT INTO event_posts (event_id, session_id, file_url, caption) VALUES (?, ?, ?, ?)'
+            );
+            $stmt->execute([$eventId, $sessionId, $fileUrl, $_POST['caption'] ?? null]);
+        }
     }
     if (isAjax()) {
         header('Content-Type: application/json');
