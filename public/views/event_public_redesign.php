@@ -135,16 +135,31 @@
   <div class="modal fade" id="camModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content bg-dark text-white">
+        <div class="modal-header border-0">
+          <h5 class="modal-title"><?= htmlspecialchars($tr->t('use_camera')) ?></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
         <div class="modal-body text-center">
-          <div id="camContainer"></div>
-          <button type="button" class="btn btn-light mt-2" id="snapBtn"><?= htmlspecialchars($tr->t('take_photo')) ?></button>
+          <div id="cameraError" class="text-danger mb-2 d-none"></div>
+          <select id="cameraSelect" class="form-select mb-2 d-none"></select>
+          <video id="cameraPreview" class="w-100 rounded mb-2" autoplay playsinline></video>
+          <canvas id="snapshotCanvas" class="w-100 rounded mb-2 d-none"></canvas>
+          <div class="btn-group mb-2" id="filterControls" role="group">
+            <button type="button" class="btn btn-secondary active" data-filter="none">Normal</button>
+            <button type="button" class="btn btn-secondary" data-filter="grayscale(100%)">Grayscale</button>
+            <button type="button" class="btn btn-secondary" data-filter="sepia(100%)">Sepia</button>
+            <button type="button" class="btn btn-secondary" data-filter="blur(5px)">Blur</button>
+          </div>
+          <div>
+            <button type="button" class="btn btn-light" id="snapBtn"><?= htmlspecialchars($tr->t('take_photo')) ?></button>
+            <button type="button" class="btn btn-primary d-none" id="confirmBtn"><?= htmlspecialchars($tr->t('upload_btn')) ?></button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
   <script>
     const input = document.getElementById('mediaInput');
     const preview = document.getElementById('filePreview');
@@ -170,33 +185,112 @@
       }
     }
 
-    document.getElementById('cameraBtn').addEventListener('click', () => {
-      const modalEl = document.getElementById('camModal');
+    const modalEl = document.getElementById('camModal');
+    const cameraSelect = document.getElementById('cameraSelect');
+    const cameraPreview = document.getElementById('cameraPreview');
+    const snapshotCanvas = document.getElementById('snapshotCanvas');
+    const snapBtn = document.getElementById('snapBtn');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const cameraError = document.getElementById('cameraError');
+    const filterControls = document.getElementById('filterControls');
+    let stream = null;
+    let currentFilter = 'none';
+
+    function stopStream() {
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+      }
+    }
+
+    async function startStream(deviceId) {
+      stopStream();
+      try {
+        const constraints = { video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'environment' } };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        cameraPreview.srcObject = stream;
+        cameraPreview.style.filter = currentFilter;
+        cameraError.classList.add('d-none');
+      } catch (e) {
+        cameraError.textContent = 'Camera not available';
+        cameraError.classList.remove('d-none');
+      }
+    }
+
+    document.getElementById('cameraBtn').addEventListener('click', async () => {
       const modal = new bootstrap.Modal(modalEl);
-      Webcam.set({ width: 320, height: 240, image_format: 'jpeg', jpeg_quality: 90 });
-      Webcam.attach('#camContainer');
       modal.show();
-      modalEl.addEventListener('hidden.bs.modal', () => { Webcam.reset(); });
+      confirmBtn.classList.add('d-none');
+      snapBtn.classList.remove('d-none');
+      snapshotCanvas.classList.add('d-none');
+      cameraPreview.classList.remove('d-none');
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        cameraError.textContent = 'Camera not supported';
+        cameraError.classList.remove('d-none');
+        return;
+      }
+
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(d => d.kind === 'videoinput');
+      cameraSelect.innerHTML = '';
+      if (videoDevices.length > 1) {
+        cameraSelect.classList.remove('d-none');
+        videoDevices.forEach((d, i) => {
+          const opt = document.createElement('option');
+          opt.value = d.deviceId;
+          opt.textContent = d.label || `Camera ${i + 1}`;
+          cameraSelect.appendChild(opt);
+        });
+        cameraSelect.onchange = () => startStream(cameraSelect.value);
+        cameraSelect.value = videoDevices[0].deviceId;
+        startStream(videoDevices[0].deviceId);
+      } else {
+        cameraSelect.classList.add('d-none');
+        startStream(videoDevices[0] ? videoDevices[0].deviceId : undefined);
+      }
     });
+
+    modalEl.addEventListener('hidden.bs.modal', stopStream);
+
+    filterControls.addEventListener('click', e => {
+      if (e.target.dataset.filter !== undefined) {
+        filterControls.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        currentFilter = e.target.dataset.filter;
+        cameraPreview.style.filter = currentFilter;
+      }
+    });
+
+    snapBtn.addEventListener('click', () => {
+      snapshotCanvas.width = cameraPreview.videoWidth;
+      snapshotCanvas.height = cameraPreview.videoHeight;
+      const ctx = snapshotCanvas.getContext('2d');
+      ctx.filter = currentFilter;
+      ctx.drawImage(cameraPreview, 0, 0);
+      snapshotCanvas.classList.remove('d-none');
+      cameraPreview.classList.add('d-none');
+      snapBtn.classList.add('d-none');
+      confirmBtn.classList.remove('d-none');
+    });
+
+    confirmBtn.addEventListener('click', () => {
+      snapshotCanvas.toBlob(blob => {
+        const file = new File([blob], 'capture.jpg', { type: blob.type });
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        bootstrap.Modal.getInstance(modalEl).hide();
+        updatePreview();
+      }, 'image/jpeg');
+    });
+
     document.getElementById('uploadBtn').addEventListener('click', () => {
       input.removeAttribute('capture');
       input.click();
     });
+
     input.addEventListener('change', updatePreview);
-    document.getElementById('snapBtn').addEventListener('click', () => {
-      Webcam.snap(dataUri => {
-        fetch(dataUri)
-          .then(res => res.blob())
-          .then(blob => {
-            const file = new File([blob], 'capture.jpg', { type: blob.type });
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            input.files = dt.files;
-            bootstrap.Modal.getInstance(document.getElementById('camModal')).hide();
-            updatePreview();
-          });
-      });
-    });
     document.querySelectorAll('.like-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.post;
