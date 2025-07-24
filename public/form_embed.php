@@ -58,7 +58,7 @@ if ($guestId) {
 }
 $fields = json_decode($form['fields'], true) ?: [];
 ?>
-<div class="container-fluid py-4" style="background-image: url("https://kaljusaar.ams3.cdn.digitaloceanspaces.com/uploads/taust.jpg"; background-color: #f5f3ee;">
+<div class="container-fluid py-4" style="background-image: url('https://kaljusaar.ams3.cdn.digitaloceanspaces.com/uploads/taust.jpg'); background-color: #f5f3ee;">
   <div class="d-flex justify-content-center">
 <?php if ($already): ?>
     <div class="alert alert-success">Aitäh vastuse eest!</div>
