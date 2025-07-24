@@ -52,7 +52,7 @@ include __DIR__ . '/../templates/header.php';
 
 <div class="d-flex align-items-center justify-content-center" style="min-height:100vh;">
     <div class="p-4" style="background: var(--card-bg); border-radius: var(--border-radius); box-shadow: 0 4px 24px #0001; min-width:320px;">
-        <h2 class="text-center mb-3">Staff Login</h2>
+        <h2 class="text-center mb-3">Event Login</h2>
         <?php if ($error): ?>
             <div class="alert alert-danger text-center py-2 mb-3">
                 <?= htmlspecialchars($error) ?>
