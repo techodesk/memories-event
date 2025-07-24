@@ -5,9 +5,10 @@
     <title>Form Example</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 	<style>
-	body { 
-	background: #EFECE7;
-	}
+		body {
+		 background-image: url("https://kaljusaar.ams3.cdn.digitaloceanspaces.com/uploads/taust.jpg");
+		 background-color: #E9E3DF;
+		}
 	</style>
 </head>
 <body>
