@@ -18,6 +18,7 @@ A simple PHP application for managing events and guests. This project is a small
 10. When uploading a new memory you can choose to capture media from your phone's camera or select an existing file. This works out of the box and requires no server changes.
 11. Create an `uploads` directory in the project root, make it writable and ensure FFmpeg is installed for video processing.
 12. Ensure the PHP EXIF extension is enabled so photos taken on phones keep their correct orientation.
+13. Run the SQL in `sql/alter_add_news_images.sql` to add support for multiple images in news posts.
 
 ## Running
 Use PHP's built-in server from the project root:

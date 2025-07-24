@@ -19,13 +19,18 @@ $pdo = new PDO(
 $uploader = new UploadManager($config['do_spaces']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['title'], $_POST['content'])) {
-    $imageUrl = null;
-    if (isset($_FILES['image']) && is_uploaded_file($_FILES['image']['tmp_name'])) {
-        $imageUrl = $uploader->uploadToFolder('news', $_FILES['image']['tmp_name'], $_FILES['image']['name']);
+    $images = [];
+    if (isset($_FILES['images'])) {
+        foreach ($_FILES['images']['tmp_name'] as $i => $tmp) {
+            if (is_uploaded_file($tmp)) {
+                $images[] = $uploader->uploadToFolder('news', $tmp, $_FILES['images']['name'][$i]);
+            }
+        }
     }
+    $imageUrl = $images[0] ?? null;
     $slug = bin2hex(random_bytes(8));
-    $stmt = $pdo->prepare('INSERT INTO news (slug, title, content, image_url) VALUES (?, ?, ?, ?)');
-    $stmt->execute([$slug, $_POST['title'], $_POST['content'], $imageUrl]);
+    $stmt = $pdo->prepare('INSERT INTO news (slug, title, content, image_url, image_urls) VALUES (?, ?, ?, ?, ?)');
+    $stmt->execute([$slug, $_POST['title'], $_POST['content'], $imageUrl, json_encode($images)]);
     header('Location: news_admin');
     exit;
 }
@@ -48,8 +53,8 @@ include __DIR__ . '/../templates/topbar.php';
                 <input type="text" name="title" class="form-control" required>
             </div>
             <div class="mb-3">
-                <label class="form-label">Image</label>
-                <input type="file" name="image" class="form-control" accept="image/*">
+                <label class="form-label">Images</label>
+                <input type="file" name="images[]" class="form-control" accept="image/*" multiple>
             </div>
             <div class="mb-3">
                 <label class="form-label">Content</label>

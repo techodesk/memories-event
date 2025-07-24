@@ -72,17 +72,25 @@ $tr = new Translation();
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body{background:#fcfaf7;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;}
-        .content{max-width:600px;margin:0 auto;padding:20px;}
-        img{max-width:100%;height:auto;display:block;margin-bottom:20px;}
+        .content{margin:0;padding:0;}
+        img{width:100%;height:auto;display:block;margin-bottom:20px;}
     </style>
 </head>
 <body>
 <div class="content">
-    <?php if($news['image_url']): ?>
-        <img src="<?= htmlspecialchars($news['image_url']) ?>" alt="">
-    <?php endif; ?>
+    <?php
+    $images = [];
+    if (!empty($news['image_urls'])) {
+        $images = json_decode($news['image_urls'], true) ?: [];
+    }
+    if (empty($images) && !empty($news['image_url'])) {
+        $images[] = $news['image_url'];
+    }
+    foreach ($images as $img): ?>
+        <img src="<?= htmlspecialchars($img) ?>" alt="">
+    <?php endforeach; ?>
     <h1><?= htmlspecialchars($news['title']) ?></h1>
-    <div><?= nl2br(htmlspecialchars($news['content'])) ?></div>
+    <div><?= $news['content'] ?></div>
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
