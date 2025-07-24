@@ -3,12 +3,12 @@
 class MediaProcessor
 {
     private UploadManager $uploader;
-    private string $stagingDir;
+    private string $uploadDir;
 
-    public function __construct(UploadManager $uploader, string $stagingDir)
+    public function __construct(UploadManager $uploader, string $uploadDir)
     {
         $this->uploader = $uploader;
-        $this->stagingDir = rtrim($stagingDir, '/');
+        $this->uploadDir = rtrim($uploadDir, '/');
     }
 
     public function processAndUpload(int $eventId, string $uploadFolder, array $file, string $sessionId): ?string
@@ -17,9 +17,9 @@ class MediaProcessor
             return null;
         }
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $eventDir = $this->stagingDir . '/event_' . $eventId;
+        $eventDir = $this->uploadDir . '/event_' . $eventId;
         if (!is_dir($eventDir)) {
-            mkdir($eventDir, 0777, true);
+            mkdir($eventDir, 0775, true);
         }
         $base = uniqid($sessionId . '_', true);
         $dest = $eventDir . '/' . $base . '.' . $ext;
