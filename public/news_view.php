@@ -90,7 +90,7 @@ $tr = new Translation();
     foreach ($images as $img): ?>
         <img src="<?= htmlspecialchars($img) ?>" alt="">
     <?php endforeach; ?>
-   <iframe src="/form_embed.php?slug=912610423f8dee78" style="border:0;width:100%;"></iframe>
+  	<iframe src="/form_embed.php?slug=912610423f8dee78" style="border:0;width:100%;"></iframe>
     <div><?= nl2br(htmlspecialchars($news['content'])) ?></div>
 </div>
 <script>
