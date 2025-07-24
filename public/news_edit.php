@@ -36,6 +36,7 @@ if (!empty($news['image_urls'])) {
 } elseif (!empty($news['image_url'])) {
     $existingImages[] = $news['image_url'];
 }
+$contentPosition = (int)($news['content_position'] ?? 0);
 
 if (isset($_GET['delete'])) {
     $pdo->prepare('DELETE FROM news_reads WHERE news_id=?')->execute([$newsId]);
@@ -59,12 +60,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['title'], $_POST['cont
         $allImages = $existingImages;
     }
     $imageUrl = $allImages[0] ?? null;
-    $stmt = $pdo->prepare('UPDATE news SET title=?, content=?, image_url=?, image_urls=? WHERE id=?');
+    $contentPos = isset($_POST['content_position']) ? intval($_POST['content_position']) : 0;
+    $stmt = $pdo->prepare('UPDATE news SET title=?, content=?, image_url=?, image_urls=?, content_position=? WHERE id=?');
     $stmt->execute([
         $_POST['title'],
         $_POST['content'],
         $imageUrl,
         $allImages ? json_encode($allImages) : null,
+        $contentPos,
         $newsId
     ]);
     header('Location: news_admin.php');
@@ -93,9 +96,20 @@ include __DIR__ . '/../templates/topbar.php';
             <?php if ($existingImages): ?>
             <div class="mb-3">
                 <label class="form-label">Current Order</label>
-                <ul id="image-list" style="list-style:none;padding:0;">
-                    <?php foreach ($existingImages as $img): ?>
-                    <li class="mb-2 d-flex align-items-center">
+                <ul id="item-list" style="list-style:none;padding:0;">
+                    <?php
+                    $idx = 0;
+                    foreach ($existingImages as $img):
+                        if ($contentPosition === $idx): ?>
+                    <li class="mb-2 d-flex align-items-center" data-type="content">
+                        <span class="me-3">[Content]</span>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-secondary move-up">&uarr;</button>
+                            <button type="button" class="btn btn-secondary move-down">&darr;</button>
+                        </div>
+                    </li>
+                    <?php endif; ?>
+                    <li class="mb-2 d-flex align-items-center" data-type="image">
                         <input type="hidden" name="current_images[]" value="<?= htmlspecialchars($img) ?>">
                         <img src="<?= htmlspecialchars($img) ?>" alt="" style="max-width:120px;height:auto;margin-right:10px;">
                         <div class="btn-group btn-group-sm" role="group">
@@ -103,13 +117,25 @@ include __DIR__ . '/../templates/topbar.php';
                             <button type="button" class="btn btn-secondary move-down">&darr;</button>
                         </div>
                     </li>
-                    <?php endforeach; ?>
+                    <?php $idx++; endforeach; ?>
+                    <?php if ($contentPosition >= $idx): ?>
+                    <li class="mb-2 d-flex align-items-center" data-type="content">
+                        <span class="me-3">[Content]</span>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-secondary move-up">&uarr;</button>
+                            <button type="button" class="btn btn-secondary move-down">&darr;</button>
+                        </div>
+                    </li>
+                    <?php endif; ?>
                 </ul>
                 <input type="hidden" name="image_order" id="image_order">
+                <input type="hidden" name="content_position" id="content_position">
             </div>
+            <?php else: ?>
+            <input type="hidden" name="content_position" value="0">
             <?php endif; ?>
             <div class="mb-3">
-                <label class="form-label">Content</label>
+                <label class="form-label">Content (HTML allowed)</label>
                 <textarea name="content" rows="3" class="form-control"><?= htmlspecialchars($news['content']) ?></textarea>
             </div>
             <button type="submit" class="btn btn-accent">Save</button>
@@ -119,15 +145,23 @@ include __DIR__ . '/../templates/topbar.php';
 </main>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var list = document.getElementById('image-list');
+    var list = document.getElementById('item-list');
     if (!list) return;
     var orderInput = document.getElementById('image_order');
+    var contentInput = document.getElementById('content_position');
     function updateOrder() {
         var arr = [];
-        list.querySelectorAll('input[name="current_images[]"]').forEach(function (el) {
-            arr.push(el.value);
+        var pos = 0;
+        list.querySelectorAll('li').forEach(function (li, idx) {
+            if (li.dataset.type === 'content') {
+                pos = idx;
+            } else {
+                var val = li.querySelector('input[name="current_images[]"]').value;
+                arr.push(val);
+            }
         });
         orderInput.value = JSON.stringify(arr);
+        contentInput.value = pos;
     }
     list.addEventListener('click', function (e) {
         if (e.target.classList.contains('move-up')) {

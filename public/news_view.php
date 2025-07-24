@@ -87,11 +87,17 @@ $tr = new Translation();
     if (empty($images) && !empty($news['image_url'])) {
         $images[] = $news['image_url'];
     }
-    foreach ($images as $img): ?>
-        <img src="<?= htmlspecialchars($img) ?>" alt="">
-    <?php endforeach; ?>
-  	<iframe src="/form_embed.php?slug=912610423f8dee78" style="border:0;width:100%;"></iframe>
-    <div><?= nl2br(htmlspecialchars($news['content'])) ?></div>
+    $pos = (int)($news['content_position'] ?? count($images));
+    foreach ($images as $i => $img) {
+        if ($i === $pos) {
+            echo $news['content'];
+        }
+        echo '<img src="' . htmlspecialchars($img) . '" alt="">';
+    }
+    if ($pos >= count($images)) {
+        echo $news['content'];
+    }
+    ?>
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
