@@ -53,7 +53,7 @@ $fields = json_decode($form['fields'], true) ?: [];
                 <?php endif ?>
             </div>
         <?php endforeach ?>
-        <button type="submit" class="btn btn-primary">Submit</button>
+       <!-- <button type="submit" class="btn btn-primary">Submit</button>-->
     </form>
 </div>
 <script>
@@ -62,7 +62,7 @@ $fields = json_decode($form['fields'], true) ?: [];
         fetch('/form_submit.php?slug=<?= urlencode($slug) ?>', {
             method: 'POST',
             body: new FormData(form)
-        }).then(function () { form.innerHTML = '<div class="alert alert-success">Thanks!</div>'; });
+        }).then(function () { form.innerHTML = '<div class="alert alert-success">Aitäh vastuse eest!</div>'; });
     }
     form.addEventListener('submit', function (e) {
         e.preventDefault();
