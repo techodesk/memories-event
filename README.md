@@ -39,5 +39,8 @@ You can upload an optional header image when creating or editing an event. Image
 ## Event QR Codes
 Each event page shows a QR code linking to the public event URL. You can regenerate the event's public identifier from the Edit Event screen which will update the QR code accordingly.
 
+## Uploads Management
+Staff users can browse all uploaded memories on the **Uploads** page in the dashboard. Choose an event from the drop-down to see its files and download or delete them. No extra setup is required beyond the feed tables mentioned above.
+
 ## Development Notes
 Run `php -l public/*.php` before committing to ensure there are no syntax errors.
