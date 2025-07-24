@@ -19,6 +19,8 @@ switch ($path) {
         require 'uploads.php'; break;
     case 'news_admin':
         require 'news_admin.php'; break;
+    case 'news_edit':
+        require 'news_edit.php'; break;
     case 'find_event':
         require 'find_event.php'; break;
         case 'miskus':
@@ -40,7 +42,7 @@ if (preg_match('#^news/([A-Za-z0-9]+)$#', $path, $m)) {
     return;
 }
 
-if ($path !== '' && !in_array($path, ['dashboard','events','login','logout','guest_portal','guests','find_event','news_admin'])) {
+if ($path !== '' && !in_array($path, ['dashboard','events','login','logout','guest_portal','guests','find_event','news_admin','news_edit'])) {
     http_response_code(404);
     echo "404 Not Found";
 }
