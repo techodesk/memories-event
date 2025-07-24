@@ -70,7 +70,7 @@
     <div class="glass-box text-center">
       <strong><?= htmlspecialchars($event['event_date']) ?></strong><br>
       <?= htmlspecialchars($event['event_location']) ?><br>
-      <small>Hosted by <?= htmlspecialchars($event['description']) ?></small>
+      <small><?= htmlspecialchars($event['description']) ?></small>
     </div>
 
     <div class="glass-box">
