@@ -4,12 +4,18 @@
     <meta charset="UTF-8">
     <title>Form Example</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-	<style>
-		body {
-		 background-image: url("https://kaljusaar.ams3.cdn.digitaloceanspaces.com/uploads/taust.jpg");
-		 background-color: #E9E3DF;
-		}
-	</style>
+    <style>
+        body {
+            background-image: url("https://kaljusaar.ams3.cdn.digitaloceanspaces.com/uploads/taust.jpg");
+            background-color: #E9E3DF;
+        }
+        /* Optional: Form shadow and max width for aesthetics */
+        .center-form {
+            min-width: 320px;
+            max-width: 600px;
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
 <?php
@@ -32,8 +38,9 @@ if (!$form) {
 }
 $fields = json_decode($form['fields'], true) ?: [];
 ?>
-<div class="container py-4">
-    <form id="ajax-form">
+<div class="container-fluid py-4" style="background: #f5f3ee;">
+  <div class="d-flex justify-content-center">
+    <form id="ajax-form" class="bg-white p-3 rounded shadow-sm center-form">
         <?php foreach ($fields as $field): ?>
             <div class="mb-3">
                 <label class="form-label"><?= htmlspecialchars($field['label']) ?></label>
@@ -46,21 +53,28 @@ $fields = json_decode($form['fields'], true) ?: [];
                         <?php endforeach ?>
                     </select>
                 <?php elseif ($field['type'] === 'radio'): $i = 0; ?>
-                    <?php foreach (explode(',', $field['options']) as $opt): $opt = trim($opt); $i++; ?>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input auto-submit" type="radio" name="<?= htmlspecialchars($field['name']) ?>" value="<?= htmlspecialchars($opt) ?>" id="<?= htmlspecialchars($field['name'] . '_' . $i) ?>">
-                            <label class="form-check-label" for="<?= htmlspecialchars($field['name'] . '_' . $i) ?>">
-                                <?= htmlspecialchars($opt) ?>
-                            </label>
+                    <div class="text-center">
+                        <div class="d-inline-flex gap-4 flex-wrap">
+                        <?php foreach (explode(',', $field['options']) as $opt): $opt = trim($opt); $i++; ?>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input auto-submit" type="radio" name="<?= htmlspecialchars($field['name']) ?>" value="<?= htmlspecialchars($opt) ?>" id="<?= htmlspecialchars($field['name'] . '_' . $i) ?>">
+                                <label class="form-check-label" for="<?= htmlspecialchars($field['name'] . '_' . $i) ?>">
+                                    <?= htmlspecialchars($opt) ?>
+                                </label>
+                            </div>
+                        <?php endforeach ?>
                         </div>
-                    <?php endforeach ?>
+                    </div>
                 <?php else: ?>
                     <input type="<?= htmlspecialchars($field['type']) ?>" name="<?= htmlspecialchars($field['name']) ?>" class="form-control">
                 <?php endif ?>
             </div>
         <?php endforeach ?>
-       <!-- <button type="submit" class="btn btn-primary">Submit</button>-->
+        <!-- No need for a submit button if auto-submit, but uncomment if needed:
+        <button type="submit" class="btn btn-primary">Submit</button>
+        -->
     </form>
+  </div>
 </div>
 <script>
     var form = document.getElementById('ajax-form');
@@ -68,7 +82,9 @@ $fields = json_decode($form['fields'], true) ?: [];
         fetch('/form_submit.php?slug=<?= urlencode($slug) ?>', {
             method: 'POST',
             body: new FormData(form)
-        }).then(function () { form.innerHTML = '<div class="alert alert-success">Aitäh vastuse eest!</div>'; });
+        }).then(function () {
+            form.innerHTML = '<div class="alert alert-success">Aitäh vastuse eest!</div>';
+        });
     }
     form.addEventListener('submit', function (e) {
         e.preventDefault();
