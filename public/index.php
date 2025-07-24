@@ -23,8 +23,6 @@ switch ($path) {
         require 'news_edit.php'; break;
     case 'find_event':
         require 'find_event.php'; break;
-        case 'miskus':
-        require 'info.php'; break;
     default:
         // handled below
         break;

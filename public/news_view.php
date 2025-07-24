@@ -90,7 +90,7 @@ $tr = new Translation();
         <img src="<?= htmlspecialchars($img) ?>" alt="">
     <?php endforeach; ?>
     <h1><?= htmlspecialchars($news['title']) ?></h1>
-    <div><?= $news['content'] ?></div>
+    <div><?= nl2br(htmlspecialchars($news['content'])) ?></div>
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
