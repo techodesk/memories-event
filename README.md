@@ -14,7 +14,8 @@ A simple PHP application for managing events and guests. This project is a small
 
 7. The guest selector relies on the Choices.js library loaded from a CDN. Ensure the host running the app can access the CDN or adjust the paths accordingly.
 8. The public event page uses JavaScript and AJAX for posting memories, comments and likes. No additional setup is required but JavaScript must be enabled in the browser.
-9. Create an `uploads` directory in the project root, make it writable and ensure FFmpeg is installed for video processing.
+9. When uploading a new memory you can choose to capture media from your phone's camera or select an existing file. This works out of the box and requires no server changes.
+10. Create an `uploads` directory in the project root, make it writable and ensure FFmpeg is installed for video processing.
 
 ## Running
 Use PHP's built-in server from the project root:

@@ -43,7 +43,12 @@ $memPdo = new PDO(
 $stmt = $memPdo->prepare('SELECT * FROM events WHERE public_id = ? LIMIT 1');
 $stmt->execute([$publicId]);
 $event = $stmt->fetch(PDO::FETCH_ASSOC);
-$eventId = $event['id'] ?? 0;
+if (!$event) {
+    http_response_code(404);
+    echo 'Event not found';
+    exit;
+}
+$eventId = $event['id'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_post'])) {
     $uploadOk = false;

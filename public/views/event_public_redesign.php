@@ -52,6 +52,10 @@
       width: 100%;
       border-radius: 12px;
     }
+    .like-btn.active {
+      background-color: #0d6efd;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -72,7 +76,11 @@
     <div class="glass-box">
       <form method="post" enctype="multipart/form-data" id="postForm">
         <input type="hidden" name="new_post" value="1">
-        <input type="file" name="media" class="form-control mb-2" accept="image/*,video/*" required>
+        <input type="file" name="media" id="mediaInput" accept="image/*,video/*" class="d-none" required>
+        <div class="d-flex gap-2 mb-2">
+          <button type="button" class="btn btn-secondary flex-fill" id="cameraBtn">Use Camera</button>
+          <button type="button" class="btn btn-secondary flex-fill" id="uploadBtn">Choose File</button>
+        </div>
         <textarea name="caption" class="form-control mb-2" placeholder="Write a message..."></textarea>
         <button type="submit" class="btn btn-primary w-100">Upload</button>
       </form>
@@ -88,11 +96,42 @@
           <img src="<?= htmlspecialchars($p['file_url']) ?>" alt="Memory">
         <?php endif; ?>
         <?php if (!empty($p['caption'])): ?><p><?= htmlspecialchars($p['caption']) ?></p><?php endif; ?>
+        <div class="d-flex align-items-center like-container mt-1">
+          <button type="button" class="btn btn-sm btn-outline-light like-btn<?= $p['liked'] ? ' active' : '' ?>" data-post="<?= $p['id'] ?>">
+            <span class="like-text"><?= $p['liked'] ? 'Unlike' : 'Like' ?></span>
+          </button>
+          <span class="ms-2 like-count"><?= $p['likes'] ?></span>
+        </div>
       </div>
       <?php endforeach; ?>
     </div>
   </div>
 
   <button class="btn btn-light upload-btn" onclick="document.querySelector('[name=media]').click()">Add Memory</button>
+
+  <script>
+    const input = document.getElementById('mediaInput');
+    document.getElementById('cameraBtn').addEventListener('click', () => {
+      input.setAttribute('capture', 'environment');
+      input.click();
+    });
+    document.getElementById('uploadBtn').addEventListener('click', () => {
+      input.removeAttribute('capture');
+      input.click();
+    });
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.post;
+        const form = new URLSearchParams({like_post: 1, post_id: id});
+        fetch('', {method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'}, body: form})
+          .then(r => r.json())
+          .then(d => {
+            btn.classList.toggle('active', d.liked);
+            btn.querySelector('.like-text').textContent = d.liked ? 'Unlike' : 'Like';
+            btn.closest('.like-container').querySelector('.like-count').textContent = d.likes;
+          });
+      });
+    });
+  </script>
 </body>
 </html>
