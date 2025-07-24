@@ -73,7 +73,7 @@ $tr = new Translation();
     <style>
         body{background:#fcfaf7;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;}
         .content{margin:0;padding:0;}
-        img{width:100%;height:auto;display:block;margin-bottom:20px;}
+        img{width:100%;height:auto;display:block;margin-bottom:0;}
     </style>
 </head>
 <body>

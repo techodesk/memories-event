@@ -30,6 +30,13 @@ if (!$news) {
     die('News not found');
 }
 
+$existingImages = [];
+if (!empty($news['image_urls'])) {
+    $existingImages = json_decode($news['image_urls'], true) ?: [];
+} elseif (!empty($news['image_url'])) {
+    $existingImages[] = $news['image_url'];
+}
+
 if (isset($_GET['delete'])) {
     $pdo->prepare('DELETE FROM news_reads WHERE news_id=?')->execute([$newsId]);
     $pdo->prepare('DELETE FROM news WHERE id=?')->execute([$newsId]);
@@ -38,22 +45,28 @@ if (isset($_GET['delete'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['title'], $_POST['content'])) {
-    $images = [];
+    $order = json_decode($_POST['image_order'] ?? '[]', true) ?: [];
+    $uploaded = [];
     if (isset($_FILES['images'])) {
         foreach ($_FILES['images']['tmp_name'] as $i => $tmp) {
             if (is_uploaded_file($tmp)) {
-                $images[] = $uploader->uploadToFolder('news', $tmp, $_FILES['images']['name'][$i]);
+                $uploaded[] = $uploader->uploadToFolder('news', $tmp, $_FILES['images']['name'][$i]);
             }
         }
     }
-    $imageUrl = $news['image_url'];
-    $imageUrls = $news['image_urls'];
-    if ($images) {
-        $imageUrl = $images[0];
-        $imageUrls = json_encode($images);
+    $allImages = array_merge($order, $uploaded);
+    if (!$allImages) {
+        $allImages = $existingImages;
     }
+    $imageUrl = $allImages[0] ?? null;
     $stmt = $pdo->prepare('UPDATE news SET title=?, content=?, image_url=?, image_urls=? WHERE id=?');
-    $stmt->execute([$_POST['title'], $_POST['content'], $imageUrl, $imageUrls, $newsId]);
+    $stmt->execute([
+        $_POST['title'],
+        $_POST['content'],
+        $imageUrl,
+        $allImages ? json_encode($allImages) : null,
+        $newsId
+    ]);
     header('Location: news_admin.php');
     exit;
 }
@@ -77,6 +90,24 @@ include __DIR__ . '/../templates/topbar.php';
                 <label class="form-label">Images</label>
                 <input type="file" name="images[]" class="form-control" accept="image/*" multiple>
             </div>
+            <?php if ($existingImages): ?>
+            <div class="mb-3">
+                <label class="form-label">Current Order</label>
+                <ul id="image-list" style="list-style:none;padding:0;">
+                    <?php foreach ($existingImages as $img): ?>
+                    <li class="mb-2 d-flex align-items-center">
+                        <input type="hidden" name="current_images[]" value="<?= htmlspecialchars($img) ?>">
+                        <img src="<?= htmlspecialchars($img) ?>" alt="" style="max-width:120px;height:auto;margin-right:10px;">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-secondary move-up">&uarr;</button>
+                            <button type="button" class="btn btn-secondary move-down">&darr;</button>
+                        </div>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+                <input type="hidden" name="image_order" id="image_order">
+            </div>
+            <?php endif; ?>
             <div class="mb-3">
                 <label class="form-label">Content</label>
                 <textarea name="content" rows="3" class="form-control"><?= htmlspecialchars($news['content']) ?></textarea>
@@ -86,4 +117,35 @@ include __DIR__ . '/../templates/topbar.php';
         </form>
     </div>
 </main>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var list = document.getElementById('image-list');
+    if (!list) return;
+    var orderInput = document.getElementById('image_order');
+    function updateOrder() {
+        var arr = [];
+        list.querySelectorAll('input[name="current_images[]"]').forEach(function (el) {
+            arr.push(el.value);
+        });
+        orderInput.value = JSON.stringify(arr);
+    }
+    list.addEventListener('click', function (e) {
+        if (e.target.classList.contains('move-up')) {
+            var li = e.target.closest('li');
+            if (li.previousElementSibling) {
+                li.parentNode.insertBefore(li, li.previousElementSibling);
+                updateOrder();
+            }
+        }
+        if (e.target.classList.contains('move-down')) {
+            var li = e.target.closest('li');
+            if (li.nextElementSibling) {
+                li.parentNode.insertBefore(li.nextElementSibling, li);
+                updateOrder();
+            }
+        }
+    });
+    updateOrder();
+});
+</script>
 <?php include __DIR__ . '/../templates/footer.php'; ?>
