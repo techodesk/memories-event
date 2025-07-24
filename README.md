@@ -62,6 +62,9 @@ The public event page includes a minimal Web App Manifest and service worker.
 steps are required—just ensure these files are served by your web server.
 
 ### Camera Uploads
-`Webcam.js` is loaded from a CDN to allow capturing a photo directly from the
-browser. The feature works out of the box and does not need extra server
-configuration.
+Photos can be captured directly from the browser using the built in
+`getUserMedia` API. Clicking **Use Camera** opens a modal where you can pick the
+front or back camera (when available), preview the live feed and apply simple
+filters before taking the shot. If the browser does not allow camera access the
+regular file picker can still be used. No extra server configuration is
+required.
