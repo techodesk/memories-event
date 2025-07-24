@@ -51,3 +51,16 @@ Run `php -l public/*.php` before committing to ensure there are no syntax errors
 The event management pages (events.php and event.php) now support a simple
 translation system. Append `?lang=es` to the URL to switch to Spanish. If no
 language is provided the interface defaults to English.
+
+The public event page (`/e/{id}`) also understands the `lang` parameter and
+uses the same translation system for its interface.
+
+### Progressive Web App
+The public event page includes a minimal Web App Manifest and service worker.
+`manifest.json` and `sw.js` reside in the `public/` folder. No additional build
+steps are required—just ensure these files are served by your web server.
+
+### Camera Uploads
+`Webcam.js` is loaded from a CDN to allow capturing a photo directly from the
+browser. The feature works out of the box and does not need extra server
+configuration.
