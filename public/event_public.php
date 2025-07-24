@@ -47,6 +47,7 @@ $eventId = $event['id'] ?? 0;
 
 // --- Handle new post ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_post'])) {
+    $uploadOk = false;
     if (isset($_FILES['media']) && is_uploaded_file($_FILES['media']['tmp_name'])) {
         $uploader = new UploadManager($config['do_spaces']);
         $processor = new MediaProcessor($uploader, __DIR__ . '/../uploads');
@@ -61,11 +62,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_post'])) {
                 'INSERT INTO event_posts (event_id, session_id, file_url, caption) VALUES (?, ?, ?, ?)'
             );
             $stmt->execute([$eventId, $sessionId, $fileUrl, $_POST['caption'] ?? null]);
+            $uploadOk = true;
         }
     }
     if (isAjax()) {
         header('Content-Type: application/json');
-        echo json_encode(['ok' => true]);
+        echo json_encode(['ok' => $uploadOk]);
         exit;
     }
     redirectSelf();
@@ -302,9 +304,16 @@ if (postForm) {
         xhr.onload = function() {
             wrap.style.display = 'none';
             prog.value = 0;
-            postForm.reset();
-            document.getElementById('preview').innerHTML = '';
-            location.reload();
+            try {
+                const res = JSON.parse(xhr.responseText);
+                if (res && res.ok) {
+                    postForm.reset();
+                    document.getElementById('preview').innerHTML = '';
+                    location.reload();
+                    return;
+                }
+            } catch (e) {}
+            alert('Upload failed. Please try again.');
         };
         xhr.send(fd);
     });
