@@ -27,7 +27,15 @@ $pdo = new PDO(
     $memDbConf['pass'],
     [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
 );
+$emDbConf = $config['db_event_manager'];
+$emPdo = new PDO(
+    "mysql:host={$emDbConf['host']};dbname={$emDbConf['dbname']};charset={$emDbConf['charset']}",
+    $emDbConf['user'],
+    $emDbConf['pass'],
+    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+);
 $slug = $_GET['slug'] ?? '';
+$code = $_GET['code'] ?? ($_GET['invite'] ?? '');
 $stmt = $pdo->prepare('SELECT * FROM forms WHERE slug=?');
 $stmt->execute([$slug]);
 $form = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -36,10 +44,25 @@ if (!$form) {
     echo 'Form not found';
     exit;
 }
+$guestId = null;
+if ($code !== '') {
+    $gStmt = $emPdo->prepare('SELECT id FROM guests WHERE invite_code=? AND rsvp_status="Accepted"');
+    $gStmt->execute([$code]);
+    $guestId = $gStmt->fetchColumn() ?: null;
+}
+$already = false;
+if ($guestId) {
+    $chk = $pdo->prepare('SELECT id FROM form_submissions WHERE form_id=? AND guest_id=?');
+    $chk->execute([$form['id'], $guestId]);
+    $already = (bool)$chk->fetchColumn();
+}
 $fields = json_decode($form['fields'], true) ?: [];
 ?>
 <div class="container-fluid py-4" style="background: #f5f3ee;">
   <div class="d-flex justify-content-center">
+<?php if ($already): ?>
+    <div class="alert alert-success">Aitäh vastuse eest!</div>
+<?php else: ?>
     <form id="ajax-form" class="bg-white p-3 rounded shadow-sm center-form">
         <?php foreach ($fields as $field): ?>
             <div class="mb-3">
@@ -74,12 +97,14 @@ $fields = json_decode($form['fields'], true) ?: [];
         <button type="submit" class="btn btn-primary">Submit</button>
         -->
     </form>
+<?php endif ?>
   </div>
 </div>
 <script>
+<?php if (!$already): ?>
     var form = document.getElementById('ajax-form');
     function sendForm() {
-        fetch('/form_submit.php?slug=<?= urlencode($slug) ?>', {
+        fetch('/form_submit.php?slug=<?= urlencode($slug) ?>&code=<?= urlencode($code) ?>', {
             method: 'POST',
             body: new FormData(form)
         }).then(function () {
@@ -93,6 +118,7 @@ $fields = json_decode($form['fields'], true) ?: [];
     form.querySelectorAll('.auto-submit').forEach(function (el) {
         el.addEventListener('change', sendForm);
     });
+<?php endif ?>
 </script>
 </body>
 </html>
