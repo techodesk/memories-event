@@ -104,7 +104,7 @@ class Translation
 
     ];
 
-    private $lang = 'en';
+    private $lang = 'e';
 
     public function __construct()
     {
