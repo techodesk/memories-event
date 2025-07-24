@@ -81,7 +81,7 @@
 
   <div class="text-end px-3 mt-2">
     <small class="text-white"><?= htmlspecialchars($tr->t('language')) ?>:</small>
-    <a href="?public_id=<?= urlencode($publicId) ?>&lang=et" class="text-white ms-2">EN</a>
+    <a href="?public_id=<?= urlencode($publicId) ?>&lang=et" class="text-white ms-2">EE</a>
     <a href="?public_id=<?= urlencode($publicId) ?>&lang=es" class="text-white ms-2">ES</a>
     <a href="?public_id=<?= urlencode($publicId) ?>&lang=en" class="text-white ms-2">ES</a>
   </div>
