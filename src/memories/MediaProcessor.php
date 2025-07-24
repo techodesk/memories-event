@@ -28,9 +28,10 @@ class MediaProcessor
         }
         if ($this->isVideo($dest)) {
             $processed = $eventDir . '/' . $base . '.mp4';
-            $this->processVideo($dest, $processed);
-            unlink($dest);
-            $dest = $processed;
+            if ($this->processVideo($dest, $processed)) {
+                unlink($dest);
+                $dest = $processed;
+            }
         } elseif ($this->isImage($dest)) {
             $this->processImage($dest);
         }
@@ -53,7 +54,7 @@ class MediaProcessor
         return in_array($ext, $img, true);
     }
 
-    private function processVideo(string $input, string $output): void
+    private function processVideo(string $input, string $output): bool
     {
         $cmd = sprintf(
             'ffmpeg -i %s -vf scale=1280:-2 -c:v libx264 -preset veryfast -crf 23 -c:a aac -y %s 2>&1',
@@ -61,6 +62,7 @@ class MediaProcessor
             escapeshellarg($output)
         );
         shell_exec($cmd);
+        return is_file($output);
     }
 
     private function processImage(string $path): void
