@@ -1,4 +1,5 @@
 <?php
+session_start();
 $config = require __DIR__ . '/../config/config.php';
 $memDbConf = $config['db_memories'];
 $pdo = new PDO(
@@ -16,6 +17,11 @@ if (!$form) {
     exit('Not found');
 }
 $code = $_GET['code'] ?? ($_GET['invite'] ?? '');
+if ($code === '' && !empty($_SESSION['invite_code'])) {
+    $code = $_SESSION['invite_code'];
+} elseif ($code !== '') {
+    $_SESSION['invite_code'] = $code;
+}
 $guestId = null;
 if ($code !== '') {
     $emDbConf = $config['db_event_manager'];
