@@ -18,6 +18,14 @@ $pdo = new PDO(
 
 $uploader = new UploadManager($config['do_spaces']);
 
+if (isset($_GET['delete'])) {
+    $id = intval($_GET['delete']);
+    $pdo->prepare('DELETE FROM news_reads WHERE news_id=?')->execute([$id]);
+    $pdo->prepare('DELETE FROM news WHERE id=?')->execute([$id]);
+    header('Location: news_admin.php');
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['title'], $_POST['content'])) {
     $images = [];
     if (isset($_FILES['images'])) {
@@ -69,6 +77,7 @@ include __DIR__ . '/../templates/topbar.php';
                         <th>Title</th>
                         <th>Created</th>
                         <th>Link</th>
+                        <th style="width:120px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -77,6 +86,10 @@ include __DIR__ . '/../templates/topbar.php';
                         <td><?= htmlspecialchars($n['title']) ?></td>
                         <td><?= htmlspecialchars($n['created_at']) ?></td>
                         <td><a href="/news/<?= urlencode($n['slug']) ?>" target="_blank">Open</a></td>
+                        <td>
+                            <a href="news_edit.php?id=<?= $n['id'] ?>" class="btn btn-secondary btn-sm">Edit</a>
+                            <a href="news_admin.php?delete=<?= $n['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Delete this post?')"><i class="bi bi-trash"></i></a>
+                        </td>
                     </tr>
                 <?php endforeach ?>
                 </tbody>

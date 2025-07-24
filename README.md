@@ -19,6 +19,7 @@ A simple PHP application for managing events and guests. This project is a small
 11. Create an `uploads` directory in the project root, make it writable and ensure FFmpeg is installed for video processing.
 12. Ensure the PHP EXIF extension is enabled so photos taken on phones keep their correct orientation.
 13. Run the SQL in `sql/alter_add_news_images.sql` to add support for multiple images in news posts.
+14. You can now edit or delete news posts from the **News** page. Click *Edit* next to a post to modify or remove it. No additional setup is required.
 
 ## Running
 Use PHP's built-in server from the project root:
