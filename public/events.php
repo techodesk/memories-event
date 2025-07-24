@@ -9,6 +9,7 @@ require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/guests/GuestManager.php';
 require_once __DIR__ . '/../src/guests/guest_helpers.php';
 require_once __DIR__ . '/../src/memories/UploadManager.php';
+require_once __DIR__ . '/../src/Translation.php';
 
 // --- DB Connections ---
 $memDbConf = $config['db_memories'];
@@ -17,6 +18,7 @@ $emDbConf = $config['db_event_manager'];
 $emPdo = new PDO("mysql:host={$emDbConf['host']};dbname={$emDbConf['dbname']};charset={$emDbConf['charset']}", $emDbConf['user'], $emDbConf['pass'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 
 $guestManager = new GuestManager($emPdo, $memPdo);
+$tr = new Translation();
 
 // --- ADD EVENT ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_name'])) {
@@ -74,7 +76,7 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $all_guests = $guestManager->fetchAllGuests();
 
 // --- Theming Stuff ---
-$page_title = "Events";
+$page_title = $tr->t('events');
 $is_staff = true;
 $display_name = $_SESSION['display_name'] ?? $_SESSION['username'] ?? '';
 include __DIR__ . '/../templates/header.php';
@@ -83,33 +85,33 @@ include __DIR__ . '/../templates/topbar.php';
 ?>
 <main class="dashboard-main">
     <div class="dashboard-section mb-4">
-        <h2 class="mb-3 section-title">Events</h2>
+        <h2 class="mb-3 section-title"><?= htmlspecialchars($tr->t('events')) ?></h2>
         <form method="POST" enctype="multipart/form-data" class="mb-4">
             <div class="row g-3 align-items-end">
                 <div class="col-md-4">
-                    <label class="form-label">Name</label>
+                    <label class="form-label"><?= htmlspecialchars($tr->t('name')) ?></label>
                     <input type="text" name="event_name" class="form-control" required>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Date</label>
+                    <label class="form-label"><?= htmlspecialchars($tr->t('date')) ?></label>
                     <input type="date" name="event_date" class="form-control">
                 </div>
                 <div class="col-md-5">
-                    <label class="form-label">Location</label>
+                    <label class="form-label"><?= htmlspecialchars($tr->t('location')) ?></label>
                     <input type="text" name="event_location" class="form-control">
                 </div>
                 <div class="col-12 col-md-5">
-                    <label class="form-label">Header Image</label>
+                    <label class="form-label"><?= htmlspecialchars($tr->t('header_image')) ?></label>
                     <input type="file" name="header_image" class="form-control" accept="image/*">
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Description</label>
+                    <label class="form-label"><?= htmlspecialchars($tr->t('description')) ?></label>
                     <textarea name="description" rows="2" class="form-control"></textarea>
                 </div>
                 <?php echo renderGuestSelectInput($all_guests); ?>
 
                 <div class="col-12">
-                    <button type="submit" class="btn btn-accent mt-2 px-4">Add Event</button>
+                    <button type="submit" class="btn btn-accent mt-2 px-4"><?= htmlspecialchars($tr->t('add_event')) ?></button>
                 </div>
             </div>
         </form>
@@ -117,12 +119,12 @@ include __DIR__ . '/../templates/topbar.php';
             <table class="table table-dark table-hover align-middle mb-0" style="background: var(--card-bg); min-width:600px;">
                 <thead style="background: var(--sidebar-bg)">
                     <tr>
-                        <th>Name</th>
-                        <th>Date</th>
-                        <th>Location</th>
-                        <th>Description</th>
-                        <th>Status</th>
-                        <th style="width:120px;">Action</th>
+                        <th><?= htmlspecialchars($tr->t('name')) ?></th>
+                        <th><?= htmlspecialchars($tr->t('date')) ?></th>
+                        <th><?= htmlspecialchars($tr->t('location')) ?></th>
+                        <th><?= htmlspecialchars($tr->t('description')) ?></th>
+                        <th><?= htmlspecialchars($tr->t('status')) ?></th>
+                        <th style="width:120px;"><?= htmlspecialchars($tr->t('action')) ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -134,8 +136,8 @@ include __DIR__ . '/../templates/topbar.php';
                         <td><?= htmlspecialchars($event['description']) ?></td>
                         <td><?= htmlspecialchars($event['status'] ?? '') ?></td>
                         <td>
-                            <a href="event.php?event_id=<?= $event['id'] ?>" class="btn btn-accent btn-sm">Edit</a>
-                            <a href="events.php?delete=<?= $event['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Delete this event?')"><i class="bi bi-trash"></i></a>
+                            <a href="event.php?event_id=<?= $event['id'] ?>&lang=<?= $tr->getLang() ?>" class="btn btn-accent btn-sm"><?= htmlspecialchars($tr->t('edit')) ?></a>
+                            <a href="events.php?delete=<?= $event['id'] ?>&lang=<?= $tr->getLang() ?>" class="btn btn-danger btn-sm" onclick="return confirm('<?= htmlspecialchars($tr->t('delete_confirm')) ?>')"><i class="bi bi-trash"></i></a>
                         </td>
                     </tr>
                 <?php endforeach ?>

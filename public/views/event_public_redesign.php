@@ -48,6 +48,17 @@
       border-radius: 50px;
       padding: 0.75rem 2rem;
     }
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.5rem;
+      z-index: 200;
+    }
     .memory img, .memory video {
       width: 100%;
       border-radius: 12px;
@@ -76,7 +87,7 @@
     <div class="glass-box">
       <form method="post" enctype="multipart/form-data" id="postForm">
         <input type="hidden" name="new_post" value="1">
-        <input type="file" name="media" id="mediaInput" accept="image/*,video/*" class="d-none" required>
+        <input type="file" name="media" id="mediaInput" accept="image/*,video/*" capture="environment" class="d-none" required>
         <div class="d-flex gap-2 mb-2">
           <button type="button" class="btn btn-secondary flex-fill" id="cameraBtn">Use Camera</button>
           <button type="button" class="btn btn-secondary flex-fill" id="uploadBtn">Choose File</button>
@@ -107,7 +118,9 @@
     </div>
   </div>
 
-  <button class="btn btn-light upload-btn" onclick="document.querySelector('[name=media]').click()">Add Memory</button>
+  <button class="btn btn-light upload-btn" onclick="document.getElementById('cameraBtn').click()">Add Memory</button>
+
+  <div id="loadingOverlay" class="loading-overlay d-none">Loading...</div>
 
   <script>
     const input = document.getElementById('mediaInput');
@@ -131,6 +144,10 @@
             btn.closest('.like-container').querySelector('.like-count').textContent = d.likes;
           });
       });
+    });
+
+    document.getElementById('postForm').addEventListener('submit', () => {
+      document.getElementById('loadingOverlay').classList.remove('d-none');
     });
   </script>
 </body>
