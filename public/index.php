@@ -17,9 +17,11 @@ switch ($path) {
         require 'guests.php'; break;
     case 'up':
         require 'uploads.php'; break;
+    case 'news_admin':
+        require 'news_admin.php'; break;
     case 'find_event':
         require 'find_event.php'; break;
-	case 'miskus':
+        case 'miskus':
         require 'info.php'; break;
     default:
         // handled below
@@ -32,7 +34,13 @@ if (preg_match('#^e/([A-Za-z0-9]+)$#', $path, $m)) {
     return;
 }
 
-if ($path !== '' && !in_array($path, ['dashboard','events','login','logout','guest_portal','guests','find_event'])) {
+if (preg_match('#^news/([A-Za-z0-9]+)$#', $path, $m)) {
+    $_GET['slug'] = $m[1];
+    require 'news_view.php';
+    return;
+}
+
+if ($path !== '' && !in_array($path, ['dashboard','events','login','logout','guest_portal','guests','find_event','news_admin'])) {
     http_response_code(404);
     echo "404 Not Found";
 }

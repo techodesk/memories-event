@@ -11,12 +11,13 @@ A simple PHP application for managing events and guests. This project is a small
 5. Run the SQL in `sql/alter_add_upload_folder.sql` to add the `upload_folder` column storing each event's DigitalOcean folder path.
 
 6. Run the SQL in `sql/create_feed_tables.sql` to create tables used for the public feed feature.
+7. Run the SQL in `sql/create_news_tables.sql` to create tables for the news system.
 
-7. The guest selector relies on the Choices.js library loaded from a CDN. Ensure the host running the app can access the CDN or adjust the paths accordingly.
-8. The public event page uses JavaScript and AJAX for posting memories, comments and likes. No additional setup is required but JavaScript must be enabled in the browser.
-9. When uploading a new memory you can choose to capture media from your phone's camera or select an existing file. This works out of the box and requires no server changes.
-10. Create an `uploads` directory in the project root, make it writable and ensure FFmpeg is installed for video processing.
-11. Ensure the PHP EXIF extension is enabled so photos taken on phones keep their correct orientation.
+8. The guest selector relies on the Choices.js library loaded from a CDN. Ensure the host running the app can access the CDN or adjust the paths accordingly.
+9. The public event page uses JavaScript and AJAX for posting memories, comments and likes. No additional setup is required but JavaScript must be enabled in the browser.
+10. When uploading a new memory you can choose to capture media from your phone's camera or select an existing file. This works out of the box and requires no server changes.
+11. Create an `uploads` directory in the project root, make it writable and ensure FFmpeg is installed for video processing.
+12. Ensure the PHP EXIF extension is enabled so photos taken on phones keep their correct orientation.
 
 ## Running
 Use PHP's built-in server from the project root:
