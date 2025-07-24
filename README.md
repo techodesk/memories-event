@@ -10,7 +10,9 @@ A simple PHP application for managing events and guests. This project is a small
 
 5. Run the SQL in `sql/alter_add_upload_folder.sql` to add the `upload_folder` column storing each event's DigitalOcean folder path.
 
-6. The guest selector relies on the Choices.js library loaded from a CDN. Ensure the host running the app can access the CDN or adjust the paths accordingly.
+6. Run the SQL in `sql/create_feed_tables.sql` to create tables used for the public feed feature.
+
+7. The guest selector relies on the Choices.js library loaded from a CDN. Ensure the host running the app can access the CDN or adjust the paths accordingly.
 
 ## Running
 Use PHP's built-in server from the project root:
