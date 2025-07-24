@@ -15,6 +15,11 @@ if (isset($_SERVER['PATH_INFO'])) {
 } elseif (isset($_GET['invite'])) {
     $code = $_GET['invite'];
 }
+if ($code === '' && !empty($_SESSION['invite_code'])) {
+    $code = $_SESSION['invite_code'];
+} elseif ($code !== '') {
+    $_SESSION['invite_code'] = $code;
+}
 
 function show_error(string $msg): void {
     echo '<div style="color:#c00;font-size:1.3em;text-align:center;margin-top:100px;">'.htmlspecialchars($msg).'</div>';
