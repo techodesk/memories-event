@@ -229,6 +229,9 @@ unset($p);
         <input type="hidden" name="new_post" value="1">
         <input type="file" name="media" id="mediaInput" class="form-control mb-2" accept="image/*,video/*" required>
         <div id="preview" class="mb-2"></div>
+        <div class="progress mb-2" id="uploadProgress" style="display:none;">
+          <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">Laen faili...</div>
+        </div>
         <textarea name="caption" class="form-control mb-2" placeholder="Say something..."></textarea>
         <button type="submit" class="btn btn-primary w-100">Upload</button>
       </form>
@@ -275,6 +278,40 @@ document.getElementById('mediaInput')?.addEventListener('change', function() {
   const url = URL.createObjectURL(file);
   if (file.type.startsWith('image/')) preview.innerHTML = `<img src="${url}" class="img-fluid rounded">`;
   if (file.type.startsWith('video/')) preview.innerHTML = `<video src="${url}" class="img-fluid rounded" controls></video>`;
+});
+
+const postForm = document.getElementById('postForm');
+postForm?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const progressWrap = document.getElementById('uploadProgress');
+  const bar = progressWrap.querySelector('.progress-bar');
+  progressWrap.style.display = 'block';
+  bar.style.width = '0%';
+  bar.textContent = 'Laen faili...';
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', location.href);
+  xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+  xhr.upload.addEventListener('progress', function(ev) {
+    if (ev.lengthComputable) {
+      const percent = ev.loaded / ev.total * 100;
+      bar.style.width = percent + '%';
+    }
+  });
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try {
+        const res = JSON.parse(xhr.responseText);
+        if (res.ok) {
+          location.reload();
+          return;
+        }
+      } catch (err) {}
+    }
+    bar.classList.add('bg-danger');
+    bar.textContent = 'Error';
+  };
+  xhr.send(new FormData(postForm));
 });
 
 document.querySelectorAll('.like-form').forEach(f => {
