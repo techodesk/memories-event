@@ -13,4 +13,4 @@
     <!-- Your custom theme (keep this last so it overrides) -->
     <link href="/assets/theme.css?v=<?= time(); ?>" rel="stylesheet">
 </head>
-<body class="bg-light">
+<body >
