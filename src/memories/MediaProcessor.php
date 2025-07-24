@@ -11,34 +11,64 @@ class MediaProcessor
         $this->uploadDir = rtrim($uploadDir, '/');
     }
 
-    public function processAndUpload(int $eventId, string $uploadFolder, array $file, string $sessionId): ?string
-    {
-        if (!is_uploaded_file($file['tmp_name'])) {
-            return null;
-        }
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $eventDir = $this->uploadDir . '/event_' . $eventId;
-        if (!is_dir($eventDir)) {
-            mkdir($eventDir, 0775, true);
-        }
-        $base = uniqid($sessionId . '_', true);
-        $dest = $eventDir . '/' . $base . '.' . $ext;
-        if (!move_uploaded_file($file['tmp_name'], $dest)) {
-            return null;
-        }
-        if ($this->isVideo($dest)) {
-            $processed = $eventDir . '/' . $base . '.mp4';
-            if ($this->processVideo($dest, $processed)) {
-                unlink($dest);
-                $dest = $processed;
-            }
-        } elseif ($this->isImage($dest)) {
-            $this->processImage($dest);
-        }
-        $url = $this->uploader->uploadToFolder($uploadFolder, $dest, basename($dest));
-        unlink($dest);
-        return $url;
-    }
+	public function processAndUpload(int $eventId, string $uploadFolder, array $file, string $sessionId): ?string
+	{
+		if (!is_uploaded_file($file['tmp_name'])) {
+			return null;
+		}
+
+		$ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+		$base = uniqid($sessionId . '_', true);
+		$tempDir = $this->uploadDir . '/temp';
+		$eventDir = $this->uploadDir . '/event_' . $eventId;
+
+		// Ensure both folders exist
+		if (!is_dir($tempDir)) {
+			if (!mkdir($tempDir, 0775, true) && !is_dir($tempDir)) {
+				error_log("Failed to create temp dir: $tempDir");
+				return null;
+			}
+		}
+
+		if (!is_dir($eventDir)) {
+			if (!mkdir($eventDir, 0775, true) && !is_dir($eventDir)) {
+				error_log("Failed to create event dir: $eventDir");
+				return null;
+			}
+		}
+
+		// Save upload to temp folder
+		$tempPath = $tempDir . '/' . $base . '.' . $ext;
+		if (!move_uploaded_file($file['tmp_name'], $tempPath)) {
+			error_log("Failed to move uploaded file to $tempPath");
+			return null;
+		}
+
+		// Prepare final output path
+		$finalPath = $eventDir . '/' . $base . '.mp4';
+		$processed = $tempPath;
+
+		if ($this->isVideo($tempPath)) {
+			if ($this->processVideo($tempPath, $finalPath)) {
+				unlink($tempPath); // remove original
+				$processed = $finalPath;
+			}
+		} elseif ($this->isImage($tempPath)) {
+			$this->processImage($tempPath);
+			$finalPath = $eventDir . '/' . $base . '.' . $ext;
+			rename($tempPath, $finalPath);
+			$processed = $finalPath;
+		} else {
+			// just move to event dir if unknown
+			$finalPath = $eventDir . '/' . $base . '.' . $ext;
+			rename($tempPath, $finalPath);
+			$processed = $finalPath;
+		}
+
+		$url = $this->uploader->uploadToFolder($uploadFolder, $processed, basename($processed));
+		unlink($processed);
+		return $url;
+	}
 
     private function isVideo(string $path): bool
     {
