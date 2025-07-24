@@ -22,6 +22,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
     exit;
 }
 
+if (isset($_GET['delete'])) {
+    $id = intval($_GET['delete']);
+    $pdo->prepare('DELETE FROM form_submissions WHERE form_id=?')->execute([$id]);
+    $pdo->prepare('DELETE FROM forms WHERE id=?')->execute([$id]);
+    header('Location: forms_admin.php');
+    exit;
+}
+
 $forms = $pdo->query('SELECT * FROM forms ORDER BY created_at DESC')->fetchAll(PDO::FETCH_ASSOC);
 
 $page_title = 'Forms';
@@ -50,6 +58,7 @@ include __DIR__ . '/../templates/topbar.php';
                     <tr>
                         <th>Name</th>
                         <th>Embed</th>
+                        <th style="width:120px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -57,6 +66,10 @@ include __DIR__ . '/../templates/topbar.php';
                     <tr>
                         <td><?= htmlspecialchars($f['name']) ?></td>
                         <td><code>&lt;iframe src="/form_embed.php?slug=<?= htmlspecialchars($f['slug']) ?>" style="border:0;width:100%;"&gt;&lt;/iframe&gt;</code></td>
+                        <td>
+                            <a href="forms_edit.php?id=<?= $f['id'] ?>" class="btn btn-secondary btn-sm">Edit</a>
+                            <a href="forms_admin.php?delete=<?= $f['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Delete this form?')"><i class="bi bi-trash"></i></a>
+                        </td>
                     </tr>
                 <?php endforeach ?>
                 </tbody>
