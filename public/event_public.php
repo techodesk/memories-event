@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_post'])) {
     $uploadOk = false;
     if (isset($_FILES['media']) && is_uploaded_file($_FILES['media']['tmp_name'])) {
         $uploader = new UploadManager($config['do_spaces']);
-        $processor = new MediaProcessor($uploader, __DIR__ . '/uploads');
+        $processor = new MediaProcessor($uploader, dirname(__DIR__) . '/uploads');
         $fileUrl = $processor->processAndUpload(
             $eventId,
             $event['upload_folder'] ?? '',
