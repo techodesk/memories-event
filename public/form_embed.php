@@ -1,3 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Example</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
 <?php
 $config = require __DIR__ . '/../config/config.php';
 $memDbConf = $config['db_memories'];
@@ -18,34 +26,36 @@ if (!$form) {
 }
 $fields = json_decode($form['fields'], true) ?: [];
 ?>
-<form id="ajax-form">
-<?php foreach ($fields as $field): ?>
-    <div class="mb-3">
-        <label class="form-label"><?= htmlspecialchars($field['label']) ?></label>
-        <?php if ($field['type'] === 'textarea'): ?>
-            <textarea name="<?= htmlspecialchars($field['name']) ?>" class="form-control"></textarea>
-        <?php elseif ($field['type'] === 'select'): ?>
-            <select name="<?= htmlspecialchars($field['name']) ?>" class="form-select">
-                <?php foreach (explode(',', $field['options']) as $opt): $opt = trim($opt); ?>
-                    <option value="<?= htmlspecialchars($opt) ?>"><?= htmlspecialchars($opt) ?></option>
-                <?php endforeach ?>
-            </select>
-        <?php elseif ($field['type'] === 'radio'): $i = 0; ?>
-            <?php foreach (explode(',', $field['options']) as $opt): $opt = trim($opt); $i++; ?>
-                <div class="form-check">
-                    <input class="form-check-input auto-submit" type="radio" name="<?= htmlspecialchars($field['name']) ?>" value="<?= htmlspecialchars($opt) ?>" id="<?= htmlspecialchars($field['name'] . '_' . $i) ?>">
-                    <label class="form-check-label" for="<?= htmlspecialchars($field['name'] . '_' . $i) ?>">
-                        <?= htmlspecialchars($opt) ?>
-                    </label>
-                </div>
-            <?php endforeach ?>
-        <?php else: ?>
-            <input type="<?= htmlspecialchars($field['type']) ?>" name="<?= htmlspecialchars($field['name']) ?>" class="form-control">
-        <?php endif ?>
-    </div>
-<?php endforeach ?>
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+<div class="container py-4">
+    <form id="ajax-form">
+        <?php foreach ($fields as $field): ?>
+            <div class="mb-3">
+                <label class="form-label"><?= htmlspecialchars($field['label']) ?></label>
+                <?php if ($field['type'] === 'textarea'): ?>
+                    <textarea name="<?= htmlspecialchars($field['name']) ?>" class="form-control"></textarea>
+                <?php elseif ($field['type'] === 'select'): ?>
+                    <select name="<?= htmlspecialchars($field['name']) ?>" class="form-select">
+                        <?php foreach (explode(',', $field['options']) as $opt): $opt = trim($opt); ?>
+                            <option value="<?= htmlspecialchars($opt) ?>"><?= htmlspecialchars($opt) ?></option>
+                        <?php endforeach ?>
+                    </select>
+                <?php elseif ($field['type'] === 'radio'): $i = 0; ?>
+                    <?php foreach (explode(',', $field['options']) as $opt): $opt = trim($opt); $i++; ?>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input auto-submit" type="radio" name="<?= htmlspecialchars($field['name']) ?>" value="<?= htmlspecialchars($opt) ?>" id="<?= htmlspecialchars($field['name'] . '_' . $i) ?>">
+                            <label class="form-check-label" for="<?= htmlspecialchars($field['name'] . '_' . $i) ?>">
+                                <?= htmlspecialchars($opt) ?>
+                            </label>
+                        </div>
+                    <?php endforeach ?>
+                <?php else: ?>
+                    <input type="<?= htmlspecialchars($field['type']) ?>" name="<?= htmlspecialchars($field['name']) ?>" class="form-control">
+                <?php endif ?>
+            </div>
+        <?php endforeach ?>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
 <script>
     var form = document.getElementById('ajax-form');
     function sendForm() {
@@ -62,3 +72,5 @@ $fields = json_decode($form['fields'], true) ?: [];
         el.addEventListener('change', sendForm);
     });
 </script>
+</body>
+</html>
