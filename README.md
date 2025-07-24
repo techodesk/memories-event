@@ -46,3 +46,8 @@ Staff users can browse all uploaded memories on the **Uploads** page in the dash
 
 ## Development Notes
 Run `php -l public/*.php` before committing to ensure there are no syntax errors.
+
+## Language Support
+The event management pages (events.php and event.php) now support a simple
+translation system. Append `?lang=es` to the URL to switch to Spanish. If no
+language is provided the interface defaults to English.
