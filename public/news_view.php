@@ -87,9 +87,9 @@ $tr = new Translation();
         $images[] = $news['image_url'];
     }
     foreach ($images as $img): ?>
-        <img src="<?= htmlspecialchars($img) ?>" alt="">
+        <img src="<?= //htmlspecialchars($img) ?>" alt="">
     <?php endforeach; ?>
-    <h1><?= htmlspecialchars($news['title']) ?></h1>
+   <!-- <h1><?= htmlspecialchars($news['title']) ?></h1>-->
     <div><?= nl2br(htmlspecialchars($news['content'])) ?></div>
 </div>
 <script>
