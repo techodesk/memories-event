@@ -79,6 +79,14 @@ if (isset($_GET['delete_post'])) {
     exit;
 }
 
+function isVideo(string $url): bool
+{
+    $path = parse_url($url, PHP_URL_PATH);
+    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    $video = ['mp4', 'mov', 'webm', 'mkv', 'avi', 'flv', 'wmv', '3gp', 'mpeg', 'mpg'];
+    return in_array($ext, $video, true);
+}
+
 // --- Fetch posts with comments and likes ---
 $postsStmt = $memPdo->prepare('SELECT * FROM event_posts WHERE event_id=? ORDER BY created_at DESC');
 $postsStmt->execute([$eventId]);
@@ -136,7 +144,7 @@ include __DIR__ . '/../templates/header.php';
         <?php foreach ($posts as $p): ?>
             <div class="card mb-3" style="background: var(--sidebar-bg);">
                 <div class="card-body">
-                    <?php if (preg_match('/^video\//', mime_content_type($p['file_url']))): ?>
+                    <?php if (isVideo($p['file_url'])): ?>
                         <video src="<?= htmlspecialchars($p['file_url']) ?>" class="img-fluid mb-2" controls></video>
                     <?php else: ?>
                         <img src="<?= htmlspecialchars($p['file_url']) ?>" class="img-fluid mb-2" alt="post">
