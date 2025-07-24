@@ -101,22 +101,43 @@ class MediaProcessor
         if (!$info) {
             return;
         }
-        list($width, $height) = $info;
-        $max = 1600;
-        if ($width <= $max && $height <= $max) {
-            return;
-        }
-        $ratio = min($max / $width, $max / $height);
-        $newW = (int)($width * $ratio);
-        $newH = (int)($height * $ratio);
+
         $src = imagecreatefromstring(file_get_contents($path));
         if (!$src) {
             return;
         }
-        $dst = imagecreatetruecolor($newW, $newH);
-        imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $width, $height);
-        imagejpeg($dst, $path, 85);
+
+        // Correct orientation based on EXIF data if available
+        if (function_exists('exif_read_data')) {
+            $exif = @exif_read_data($path);
+            $orientation = $exif['Orientation'] ?? 1;
+            switch ((int)$orientation) {
+                case 3:
+                    $src = imagerotate($src, 180, 0);
+                    break;
+                case 6:
+                    $src = imagerotate($src, -90, 0);
+                    break;
+                case 8:
+                    $src = imagerotate($src, 90, 0);
+                    break;
+            }
+        }
+
+        $width = imagesx($src);
+        $height = imagesy($src);
+        $max = 1600;
+        if ($width > $max || $height > $max) {
+            $ratio = min($max / $width, $max / $height);
+            $newW = (int)($width * $ratio);
+            $newH = (int)($height * $ratio);
+            $dst = imagecreatetruecolor($newW, $newH);
+            imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $width, $height);
+            imagejpeg($dst, $path, 85);
+            imagedestroy($dst);
+        } else {
+            imagejpeg($src, $path, 85);
+        }
         imagedestroy($src);
-        imagedestroy($dst);
     }
 }

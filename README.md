@@ -16,6 +16,7 @@ A simple PHP application for managing events and guests. This project is a small
 8. The public event page uses JavaScript and AJAX for posting memories, comments and likes. No additional setup is required but JavaScript must be enabled in the browser.
 9. When uploading a new memory you can choose to capture media from your phone's camera or select an existing file. This works out of the box and requires no server changes.
 10. Create an `uploads` directory in the project root, make it writable and ensure FFmpeg is installed for video processing.
+11. Ensure the PHP EXIF extension is enabled so photos taken on phones keep their correct orientation.
 
 ## Running
 Use PHP's built-in server from the project root:
