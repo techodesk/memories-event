@@ -22,6 +22,7 @@ A simple PHP application for managing events and guests. This project is a small
 14. You can now edit or delete news posts from the **News** page. Click *Edit* next to a post to modify or remove it. The edit screen also lets you reorder existing images using the arrow buttons. No additional setup is required.
 15. Run the SQL in `sql/alter_add_news_device.sql` to start logging which devices open news posts.
 16. Run the SQL in `sql/create_forms_tables.sql` to enable the Forms builder feature.
+17. The Forms builder now supports `textarea`, `select` and `radio` fields. Forms using radio buttons auto-submit as soon as a choice is made.
 
 
 ## Running

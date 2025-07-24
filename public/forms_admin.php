@@ -73,7 +73,15 @@ include __DIR__ . '/../templates/topbar.php';
             row.className = 'row g-2 mb-2 align-items-end';
             row.innerHTML = '<div class="col"><input type="text" class="form-control" placeholder="Label" data-role="label"></div>' +
                 '<div class="col"><input type="text" class="form-control" placeholder="Name" data-role="name"></div>' +
-                '<div class="col"><select class="form-select" data-role="type"><option value="text">Text</option><option value="email">Email</option><option value="number">Number</option></select></div>' +
+                '<div class="col"><select class="form-select" data-role="type">' +
+                '<option value="text">Text</option>' +
+                '<option value="email">Email</option>' +
+                '<option value="number">Number</option>' +
+                '<option value="textarea">Textarea</option>' +
+                '<option value="select">Select</option>' +
+                '<option value="radio">Radio</option>' +
+                '</select></div>' +
+                '<div class="col options-col d-none"><input type="text" class="form-control" placeholder="Options (comma separated)" data-role="options"></div>' +
                 '<div class="col-auto"><button type="button" class="btn btn-danger btn-sm remove-field">Remove</button></div>';
             fieldsDiv.appendChild(row);
         });
@@ -82,13 +90,24 @@ include __DIR__ . '/../templates/topbar.php';
                 e.target.closest('.row').remove();
             }
         });
+        fieldsDiv.addEventListener('change', function (e) {
+            if (e.target.getAttribute('data-role') === 'type') {
+                var optionsCol = e.target.closest('.row').querySelector('.options-col');
+                if (e.target.value === 'select' || e.target.value === 'radio') {
+                    optionsCol.classList.remove('d-none');
+                } else {
+                    optionsCol.classList.add('d-none');
+                }
+            }
+        });
         document.getElementById('form-builder').addEventListener('submit', function () {
             var arr = [];
             fieldsDiv.querySelectorAll('.row').forEach(function (row) {
                 arr.push({
                     label: row.querySelector('[data-role="label"]').value,
                     name: row.querySelector('[data-role="name"]').value,
-                    type: row.querySelector('[data-role="type"]').value
+                    type: row.querySelector('[data-role="type"]').value,
+                    options: row.querySelector('[data-role="options"]').value
                 });
             });
             fieldsInput.value = JSON.stringify(arr);

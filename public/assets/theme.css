@@ -292,3 +292,17 @@ textarea.form-control::placeholder {
   color: #fff !important;
   opacity: 0.6 !important;
 }
+
+/* ----- RADIO/SELECT ----- */
+.form-check-input {
+    background: var(--card-bg) !important;
+    border: 1.5px solid #2e3350 !important;
+    box-shadow: none !important;
+}
+.form-check-input:checked {
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
+}
+.form-check-input:focus {
+    box-shadow: 0 0 0 2px #6a4af380 !important;
+}
