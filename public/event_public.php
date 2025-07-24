@@ -143,4 +143,4 @@ foreach ($posts as &$p) {
 }
 unset($p);
 
-include __DIR__ . 'views/event_public_redesign.php';
+include __DIR__ . '/views/event_public_redesign.php';
