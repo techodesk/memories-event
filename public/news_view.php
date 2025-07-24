@@ -55,8 +55,9 @@ if (!$guestId) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['mode'] ?? '') === 'newsopened') {
-    $stmt = $memPdo->prepare('INSERT INTO news_reads (news_id, guest_id) VALUES (?, ?)');
-    $stmt->execute([$news['id'], $guestId]);
+    $device = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $stmt = $memPdo->prepare('INSERT INTO news_reads (news_id, guest_id, device_info) VALUES (?, ?, ?)');
+    $stmt->execute([$news['id'], $guestId, $device]);
     header('Content-Type: application/json');
     echo json_encode(['success' => true]);
     exit;

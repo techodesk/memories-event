@@ -11,5 +11,6 @@ CREATE TABLE news_reads (
     id INT AUTO_INCREMENT PRIMARY KEY,
     news_id INT NOT NULL,
     guest_id INT NOT NULL,
+    device_info VARCHAR(255) DEFAULT NULL,
     opened_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

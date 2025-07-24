@@ -1,0 +1,1 @@
+ALTER TABLE news_reads ADD COLUMN device_info VARCHAR(255) DEFAULT NULL;

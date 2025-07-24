@@ -20,6 +20,7 @@ A simple PHP application for managing events and guests. This project is a small
 12. Ensure the PHP EXIF extension is enabled so photos taken on phones keep their correct orientation.
 13. Run the SQL in `sql/alter_add_news_images.sql` to add support for multiple images in news posts.
 14. You can now edit or delete news posts from the **News** page. Click *Edit* next to a post to modify or remove it. The edit screen also lets you reorder existing images using the arrow buttons. No additional setup is required.
+15. Run the SQL in `sql/alter_add_news_device.sql` to start logging which devices open news posts.
 
 ## Running
 Use PHP's built-in server from the project root:
