@@ -101,6 +101,7 @@
           <button type="button" class="btn btn-secondary flex-fill" id="cameraBtn"><?= htmlspecialchars($tr->t('use_camera')) ?></button>
           <button type="button" class="btn btn-secondary flex-fill" id="uploadBtn"><?= htmlspecialchars($tr->t('choose_file')) ?></button>
         </div>
+        <div id="filePreview" class="mb-2"></div>
         <textarea name="caption" class="form-control mb-2" placeholder="<?= htmlspecialchars($tr->t('write_message')) ?>"></textarea>
         <button type="submit" class="btn btn-primary w-100"><?= htmlspecialchars($tr->t('upload_btn')) ?></button>
       </form>
@@ -146,6 +147,29 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
   <script>
     const input = document.getElementById('mediaInput');
+    const preview = document.getElementById('filePreview');
+
+    function updatePreview() {
+      preview.innerHTML = '';
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      if (file.type.startsWith('video/')) {
+        const v = document.createElement('video');
+        v.src = url;
+        v.controls = true;
+        v.style.maxWidth = '100%';
+        v.style.borderRadius = '12px';
+        preview.appendChild(v);
+      } else if (file.type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.src = url;
+        img.style.maxWidth = '100%';
+        img.style.borderRadius = '12px';
+        preview.appendChild(img);
+      }
+    }
+
     document.getElementById('cameraBtn').addEventListener('click', () => {
       const modalEl = document.getElementById('camModal');
       const modal = new bootstrap.Modal(modalEl);
@@ -158,6 +182,7 @@
       input.removeAttribute('capture');
       input.click();
     });
+    input.addEventListener('change', updatePreview);
     document.getElementById('snapBtn').addEventListener('click', () => {
       Webcam.snap(dataUri => {
         fetch(dataUri)
@@ -168,6 +193,7 @@
             dt.items.add(file);
             input.files = dt.files;
             bootstrap.Modal.getInstance(document.getElementById('camModal')).hide();
+            updatePreview();
           });
       });
     });
