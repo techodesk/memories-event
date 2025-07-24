@@ -68,6 +68,40 @@ class Translation
             'take_photo' => 'Tomar foto',
             'language' => 'Idioma'
         ],
+		'et' => [
+			'events' => 'Sündmused',
+			'add_event' => 'Lisa sündmus',
+			'name' => 'Nimi',
+			'date' => 'Kuupäev',
+			'location' => 'Asukoht',
+			'header_image' => 'Päise pilt',
+			'description' => 'Kirjeldus',
+			'action' => 'Tegevus',
+			'status' => 'Staatus',
+			'edit' => 'Muuda',
+			'delete_confirm' => 'Kustuta see sündmus?',
+			'edit_event' => 'Muuda sündmust',
+			'public_url' => 'Avalik URL',
+			'regenerate' => 'Genereeri uuesti',
+			'custom_css' => 'Kohandatud CSS',
+			'save_changes' => 'Salvesta muudatused',
+			'guests_for_this_event' => 'Selle sündmuse külalised',
+			'add_guests' => 'Lisa külalisi',
+			'add_selected' => 'Lisa valitud',
+			'remove_guest' => 'Eemalda külaline?',
+			'use_camera' => 'Kasuta kaamerat',
+			'choose_file' => 'Vali fail',
+			'write_message' => 'Kirjuta sõnum...',
+			'upload_btn' => 'Laadi üles',
+			'memories' => 'Mälestused',
+			'add_memory' => 'Lisa mälestus',
+			'loading' => 'Laadimine...',
+			'like' => 'Meeldib',
+			'unlike' => 'Ei meeldi',
+			'take_photo' => 'Tee foto',
+			'language' => 'Keel'
+		],
+
     ];
 
     private $lang = 'en';
