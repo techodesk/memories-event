@@ -6,6 +6,9 @@ $config = require __DIR__ . '/../config/config.php';
 require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/memories/UploadManager.php';
 require_once __DIR__ . '/../src/memories/MediaProcessor.php';
+require_once __DIR__ . '/../src/Translation.php';
+
+$tr = new Translation();
 
 $sessionId = $_SESSION['guest_session'] ?? null;
 if (!$sessionId) {

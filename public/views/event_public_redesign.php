@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= htmlspecialchars($tr->getLang()) ?>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= htmlspecialchars($event['event_name']) ?></title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#000000">
   <style>
     body {
       margin: 0;
@@ -77,6 +79,12 @@
     </div>
   </div>
 
+  <div class="text-end px-3 mt-2">
+    <small class="text-white"><?= htmlspecialchars($tr->t('language')) ?>:</small>
+    <a href="?public_id=<?= urlencode($publicId) ?>&lang=en" class="text-white ms-2">EN</a>
+    <a href="?public_id=<?= urlencode($publicId) ?>&lang=es" class="text-white ms-2">ES</a>
+  </div>
+
   <div class="container">
     <div class="glass-box text-center">
       <strong><?= htmlspecialchars($event['event_date']) ?></strong><br>
@@ -89,16 +97,16 @@
         <input type="hidden" name="new_post" value="1">
         <input type="file" name="media" id="mediaInput" accept="image/*,video/*" capture="environment" class="d-none" required>
         <div class="d-flex gap-2 mb-2">
-          <button type="button" class="btn btn-secondary flex-fill" id="cameraBtn">Use Camera</button>
-          <button type="button" class="btn btn-secondary flex-fill" id="uploadBtn">Choose File</button>
+          <button type="button" class="btn btn-secondary flex-fill" id="cameraBtn"><?= htmlspecialchars($tr->t('use_camera')) ?></button>
+          <button type="button" class="btn btn-secondary flex-fill" id="uploadBtn"><?= htmlspecialchars($tr->t('choose_file')) ?></button>
         </div>
-        <textarea name="caption" class="form-control mb-2" placeholder="Write a message..."></textarea>
-        <button type="submit" class="btn btn-primary w-100">Upload</button>
+        <textarea name="caption" class="form-control mb-2" placeholder="<?= htmlspecialchars($tr->t('write_message')) ?>"></textarea>
+        <button type="submit" class="btn btn-primary w-100"><?= htmlspecialchars($tr->t('upload_btn')) ?></button>
       </form>
     </div>
 
     <div class="glass-box">
-      <h5>Memories</h5>
+      <h5><?= htmlspecialchars($tr->t('memories')) ?></h5>
       <?php foreach ($posts as $p): ?>
       <div class="memory mb-4">
         <?php if (isVideo($p['file_url'])): ?>
@@ -108,8 +116,8 @@
         <?php endif; ?>
         <?php if (!empty($p['caption'])): ?><p><?= htmlspecialchars($p['caption']) ?></p><?php endif; ?>
         <div class="d-flex align-items-center like-container mt-1">
-          <button type="button" class="btn btn-sm btn-outline-light like-btn<?= $p['liked'] ? ' active' : '' ?>" data-post="<?= $p['id'] ?>">
-            <span class="like-text"><?= $p['liked'] ? 'Unlike' : 'Like' ?></span>
+          <button type="button" class="btn btn-sm btn-outline-light like-btn<?= $p['liked'] ? ' active' : '' ?>" data-post="<?= $p['id'] ?>" data-like="<?= htmlspecialchars($tr->t('like')) ?>" data-unlike="<?= htmlspecialchars($tr->t('unlike')) ?>">
+            <span class="like-text"><?= $p['liked'] ? htmlspecialchars($tr->t('unlike')) : htmlspecialchars($tr->t('like')) ?></span>
           </button>
           <span class="ms-2 like-count"><?= $p['likes'] ?></span>
         </div>
@@ -118,19 +126,49 @@
     </div>
   </div>
 
-  <button class="btn btn-light upload-btn" onclick="document.getElementById('cameraBtn').click()">Add Memory</button>
+  <button class="btn btn-light upload-btn" onclick="document.getElementById('cameraBtn').click()"><?= htmlspecialchars($tr->t('add_memory')) ?></button>
 
-  <div id="loadingOverlay" class="loading-overlay d-none">Loading...</div>
+  <div id="loadingOverlay" class="loading-overlay d-none"><?= htmlspecialchars($tr->t('loading')) ?></div>
 
+  <div class="modal fade" id="camModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-body text-center">
+          <div id="camContainer"></div>
+          <button type="button" class="btn btn-light mt-2" id="snapBtn"><?= htmlspecialchars($tr->t('take_photo')) ?></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
   <script>
     const input = document.getElementById('mediaInput');
     document.getElementById('cameraBtn').addEventListener('click', () => {
-      input.setAttribute('capture', 'environment');
-      input.click();
+      const modalEl = document.getElementById('camModal');
+      const modal = new bootstrap.Modal(modalEl);
+      Webcam.set({ width: 320, height: 240, image_format: 'jpeg', jpeg_quality: 90 });
+      Webcam.attach('#camContainer');
+      modal.show();
+      modalEl.addEventListener('hidden.bs.modal', () => { Webcam.reset(); });
     });
     document.getElementById('uploadBtn').addEventListener('click', () => {
       input.removeAttribute('capture');
       input.click();
+    });
+    document.getElementById('snapBtn').addEventListener('click', () => {
+      Webcam.snap(dataUri => {
+        fetch(dataUri)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], 'capture.jpg', { type: blob.type });
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            input.files = dt.files;
+            bootstrap.Modal.getInstance(document.getElementById('camModal')).hide();
+          });
+      });
     });
     document.querySelectorAll('.like-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -140,7 +178,8 @@
           .then(r => r.json())
           .then(d => {
             btn.classList.toggle('active', d.liked);
-            btn.querySelector('.like-text').textContent = d.liked ? 'Unlike' : 'Like';
+            const likeText = d.liked ? btn.dataset.unlike : btn.dataset.like;
+            btn.querySelector('.like-text').textContent = likeText;
             btn.closest('.like-container').querySelector('.like-count').textContent = d.likes;
           });
       });
@@ -149,6 +188,10 @@
     document.getElementById('postForm').addEventListener('submit', () => {
       document.getElementById('loadingOverlay').classList.remove('d-none');
     });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
   </script>
 </body>
 </html>

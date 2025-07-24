@@ -23,6 +23,17 @@ class Translation
             'add_guests' => 'Add Guests',
             'add_selected' => 'Add Selected',
             'remove_guest' => 'Remove guest?',
+            'use_camera' => 'Use Camera',
+            'choose_file' => 'Choose File',
+            'write_message' => 'Write a message...',
+            'upload_btn' => 'Upload',
+            'memories' => 'Memories',
+            'add_memory' => 'Add Memory',
+            'loading' => 'Loading...',
+            'like' => 'Like',
+            'unlike' => 'Unlike',
+            'take_photo' => 'Take Photo',
+            'language' => 'Language'
         ],
         'es' => [
             'events' => 'Eventos',
@@ -45,6 +56,17 @@ class Translation
             'add_guests' => 'Agregar Invitados',
             'add_selected' => 'Agregar Seleccionados',
             'remove_guest' => '¿Eliminar invitado?',
+            'use_camera' => 'Usar cámara',
+            'choose_file' => 'Elegir archivo',
+            'write_message' => 'Escribe un mensaje...',
+            'upload_btn' => 'Subir',
+            'memories' => 'Recuerdos',
+            'add_memory' => 'Agregar Recuerdo',
+            'loading' => 'Cargando...',
+            'like' => 'Me gusta',
+            'unlike' => 'No me gusta',
+            'take_photo' => 'Tomar foto',
+            'language' => 'Idioma'
         ],
     ];
 
