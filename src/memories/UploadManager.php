@@ -52,4 +52,38 @@ class UploadManager
         }
         return $key;
     }
+
+    public function uploadToFolder(string $folder, string $path, string $filename): string
+    {
+        $folder = rtrim($this->folder . $folder, '/');
+        $key = $folder . '/' . uniqid('', true) . '_' . basename($filename);
+        $this->client->putObject([
+            'Bucket' => $this->bucket,
+            'Key' => $key,
+            'SourceFile' => $path,
+            'ACL' => 'public-read',
+            'ContentType' => mime_content_type($path)
+        ]);
+        if ($this->cdnUrl) {
+            return $this->cdnUrl . '/' . $key;
+        }
+        return $key;
+    }
+
+    public function listFiles(string $folder): array
+    {
+        $prefix = rtrim($this->folder . $folder, '/') . '/';
+        $res = $this->client->listObjectsV2([
+            'Bucket' => $this->bucket,
+            'Prefix' => $prefix
+        ]);
+        $files = [];
+        foreach ($res['Contents'] ?? [] as $obj) {
+            if (rtrim($obj['Key'], '/') === $prefix) {
+                continue;
+            }
+            $files[] = $this->cdnUrl ? $this->cdnUrl . '/' . $obj['Key'] : $obj['Key'];
+        }
+        return $files;
+    }
 }

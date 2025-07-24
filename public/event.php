@@ -23,6 +23,16 @@ $evt = $memPdo->prepare("SELECT * FROM events WHERE id=?");
 $evt->execute([$event_id]);
 $event = $evt->fetch(PDO::FETCH_ASSOC);
 
+$uploader = new UploadManager($config['do_spaces']);
+$eventFiles = [];
+if (!empty($event['upload_folder'])) {
+    try {
+        $eventFiles = $uploader->listFiles($event['upload_folder']);
+    } catch (Exception $e) {
+        $eventFiles = [];
+    }
+}
+
 // --- Regenerate Public ID ---
 if (isset($_GET['regen_public_id'])) {
     $newId = bin2hex(random_bytes(8));
@@ -33,7 +43,6 @@ if (isset($_GET['regen_public_id'])) {
 
 // --- UPDATE EVENT DETAILS ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_event'])) {
-    $uploader = new UploadManager($config['do_spaces']);
     $headerImage = $event['header_image'] ?? null;
     if (isset($_FILES['header_image']) && is_uploaded_file($_FILES['header_image']['tmp_name'])) {
         $headerImage = $uploader->upload($_FILES['header_image']['tmp_name'], $_FILES['header_image']['name']);
@@ -121,6 +130,14 @@ include __DIR__ . '/../templates/topbar.php';
 <main class="dashboard-main">
     <div class="dashboard-section mb-4">
         <h2 class="mb-3 section-title">Edit Event</h2>
+        <p><strong>Upload Path:</strong> <?= htmlspecialchars($event['upload_folder'] ?? '') ?></p>
+        <?php if (!empty($eventFiles)): ?>
+            <ul class="mb-3">
+                <?php foreach ($eventFiles as $f): ?>
+                    <li><a href="<?= htmlspecialchars($f) ?>" target="_blank"><?= basename($f) ?></a></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
         <form method="POST" enctype="multipart/form-data" class="mb-4">
             <input type="hidden" name="update_event" value="1">
             <div class="row g-3 align-items-end">
