@@ -20,20 +20,45 @@ $fields = json_decode($form['fields'], true) ?: [];
 ?>
 <form id="ajax-form">
 <?php foreach ($fields as $field): ?>
-    <div class="mb-2">
+    <div class="mb-3">
         <label class="form-label"><?= htmlspecialchars($field['label']) ?></label>
-        <input type="<?= htmlspecialchars($field['type']) ?>" name="<?= htmlspecialchars($field['name']) ?>" class="form-control">
+        <?php if ($field['type'] === 'textarea'): ?>
+            <textarea name="<?= htmlspecialchars($field['name']) ?>" class="form-control"></textarea>
+        <?php elseif ($field['type'] === 'select'): ?>
+            <select name="<?= htmlspecialchars($field['name']) ?>" class="form-select">
+                <?php foreach (explode(',', $field['options']) as $opt): $opt = trim($opt); ?>
+                    <option value="<?= htmlspecialchars($opt) ?>"><?= htmlspecialchars($opt) ?></option>
+                <?php endforeach ?>
+            </select>
+        <?php elseif ($field['type'] === 'radio'): $i = 0; ?>
+            <?php foreach (explode(',', $field['options']) as $opt): $opt = trim($opt); $i++; ?>
+                <div class="form-check">
+                    <input class="form-check-input auto-submit" type="radio" name="<?= htmlspecialchars($field['name']) ?>" value="<?= htmlspecialchars($opt) ?>" id="<?= htmlspecialchars($field['name'] . '_' . $i) ?>">
+                    <label class="form-check-label" for="<?= htmlspecialchars($field['name'] . '_' . $i) ?>">
+                        <?= htmlspecialchars($opt) ?>
+                    </label>
+                </div>
+            <?php endforeach ?>
+        <?php else: ?>
+            <input type="<?= htmlspecialchars($field['type']) ?>" name="<?= htmlspecialchars($field['name']) ?>" class="form-control">
+        <?php endif ?>
     </div>
 <?php endforeach ?>
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
 <script>
-    document.getElementById('ajax-form').addEventListener('submit', function (e) {
-        e.preventDefault();
-        var form = e.target;
+    var form = document.getElementById('ajax-form');
+    function sendForm() {
         fetch('/form_submit.php?slug=<?= urlencode($slug) ?>', {
             method: 'POST',
             body: new FormData(form)
         }).then(function () { form.innerHTML = '<div class="alert alert-success">Thanks!</div>'; });
+    }
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        sendForm();
+    });
+    form.querySelectorAll('.auto-submit').forEach(function (el) {
+        el.addEventListener('change', sendForm);
     });
 </script>
