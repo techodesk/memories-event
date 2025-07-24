@@ -45,7 +45,7 @@ class UploadManager
             'Key' => $key,
             'SourceFile' => $path,
             'ACL' => 'public-read',
-            'ContentType' => mime_content_type($path)
+            'ContentType' => $this->detectMime($path)
         ]);
         if ($this->cdnUrl) {
             return $this->cdnUrl . '/' . $key;
@@ -62,12 +62,42 @@ class UploadManager
             'Key' => $key,
             'SourceFile' => $path,
             'ACL' => 'public-read',
-            'ContentType' => mime_content_type($path)
+            'ContentType' => $this->detectMime($path)
         ]);
         if ($this->cdnUrl) {
             return $this->cdnUrl . '/' . $key;
         }
         return $key;
+    }
+
+    private function detectMime(string $path): string
+    {
+        if (is_file($path)) {
+            $type = mime_content_type($path);
+            if ($type !== false) {
+                return $type;
+            }
+        }
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $map = [
+            'jpg'  => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png'  => 'image/png',
+            'gif'  => 'image/gif',
+            'bmp'  => 'image/bmp',
+            'webp' => 'image/webp',
+            'mp4'  => 'video/mp4',
+            'mov'  => 'video/quicktime',
+            'webm' => 'video/webm',
+            'mkv'  => 'video/x-matroska',
+            'avi'  => 'video/x-msvideo',
+            'flv'  => 'video/x-flv',
+            'wmv'  => 'video/x-ms-wmv',
+            '3gp'  => 'video/3gpp',
+            'mpeg' => 'video/mpeg',
+            'mpg'  => 'video/mpeg',
+        ];
+        return $map[$ext] ?? 'application/octet-stream';
     }
 
     public function listFiles(string $folder): array
