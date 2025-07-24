@@ -19,6 +19,18 @@ if ($publicId === '') {
     exit;
 }
 
+function isAjax(): bool
+{
+    return isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+        strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+}
+
+function redirectSelf(): void
+{
+    header('Location: ' . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+    exit;
+}
+
 $memDbConf = $config['db_memories'];
 $memPdo = new PDO(
     "mysql:host={$memDbConf['host']};dbname={$memDbConf['dbname']};charset={$memDbConf['charset']}",
@@ -42,16 +54,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_post'])) {
         );
         $stmt->execute([$eventId, $sessionId, $fileUrl, $_POST['caption'] ?? null]);
     }
-    header('Location: event_public.php?public_id=' . urlencode($publicId));
-    exit;
+    if (isAjax()) {
+        header('Content-Type: application/json');
+        echo json_encode(['ok' => true]);
+        exit;
+    }
+    redirectSelf();
 }
 
 // --- Handle comment ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_comment'])) {
     $stmt = $memPdo->prepare('INSERT INTO post_comments (post_id, session_id, content) VALUES (?, ?, ?)');
     $stmt->execute([intval($_POST['post_id']), $sessionId, trim($_POST['comment'])]);
-    header('Location: event_public.php?public_id=' . urlencode($publicId));
-    exit;
+    if (isAjax()) {
+        header('Content-Type: application/json');
+        echo json_encode(['comment' => htmlspecialchars(trim($_POST['comment']), ENT_QUOTES)]);
+        exit;
+    }
+    redirectSelf();
 }
 
 // --- Handle like toggle ---
@@ -64,8 +84,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['like_post'])) {
     } else {
         $memPdo->prepare('INSERT INTO post_likes (post_id, session_id) VALUES (?, ?)')->execute([$postId, $sessionId]);
     }
-    header('Location: event_public.php?public_id=' . urlencode($publicId));
-    exit;
+    $countStmt = $memPdo->prepare('SELECT COUNT(*) FROM post_likes WHERE post_id=?');
+    $countStmt->execute([$postId]);
+    $likes = (int)$countStmt->fetchColumn();
+    $check = $memPdo->prepare('SELECT id FROM post_likes WHERE post_id=? AND session_id=?');
+    $check->execute([$postId, $sessionId]);
+    $liked = (bool)$check->fetchColumn();
+    if (isAjax()) {
+        header('Content-Type: application/json');
+        echo json_encode(['liked' => $liked, 'likes' => $likes]);
+        exit;
+    }
+    redirectSelf();
 }
 
 // --- Handle delete post ---
@@ -75,8 +105,12 @@ if (isset($_GET['delete_post'])) {
     $stmt->execute([$pid, $sessionId]);
     $memPdo->prepare('DELETE FROM post_comments WHERE post_id=?')->execute([$pid]);
     $memPdo->prepare('DELETE FROM post_likes WHERE post_id=?')->execute([$pid]);
-    header('Location: event_public.php?public_id=' . urlencode($publicId));
-    exit;
+    if (isAjax()) {
+        header('Content-Type: application/json');
+        echo json_encode(['ok' => true]);
+        exit;
+    }
+    redirectSelf();
 }
 
 function isVideo(string $url): bool
@@ -128,12 +162,15 @@ include __DIR__ . '/../templates/header.php';
 
         <hr class="my-4">
         <h4 class="mb-3">Share a Memory</h4>
-        <form method="post" enctype="multipart/form-data" class="mb-4">
+        <form method="post" enctype="multipart/form-data" class="mb-4" id="postForm">
             <input type="hidden" name="new_post" value="1">
             <div class="mb-3">
                 <input type="file" name="media" id="mediaInput" class="form-control" accept="image/*,video/*" required>
             </div>
             <div id="preview" class="mb-3"></div>
+            <div class="mb-3" style="display:none" id="progressWrap">
+                <progress id="uploadProgress" value="0" max="100" style="width:100%"></progress>
+            </div>
             <div class="mb-3">
                 <textarea name="caption" class="form-control" rows="2" placeholder="Say something..."></textarea>
             </div>
@@ -153,7 +190,7 @@ include __DIR__ . '/../templates/header.php';
                         <p><?= htmlspecialchars($p['caption']) ?></p>
                     <?php endif; ?>
                     <div class="d-flex align-items-center mb-2">
-                        <form method="post" class="me-2">
+                        <form method="post" class="me-2 like-form">
                             <input type="hidden" name="post_id" value="<?= $p['id'] ?>">
                             <button name="like_post" class="btn btn-sm btn-outline-secondary" type="submit">
                                 <?= $p['liked'] ? 'Unlike' : 'Like' ?> (<?= $p['likes'] ?>)
@@ -168,7 +205,7 @@ include __DIR__ . '/../templates/header.php';
                             <?= htmlspecialchars($c['content']) ?>
                         </div>
                     <?php endforeach; ?>
-                    <form method="post" class="mt-2">
+                    <form method="post" class="mt-2 comment-form">
                         <input type="hidden" name="new_comment" value="1">
                         <input type="hidden" name="post_id" value="<?= $p['id'] ?>">
                         <div class="input-group">
@@ -200,5 +237,68 @@ document.getElementById('mediaInput')?.addEventListener('change', function() {
         preview.appendChild(video);
     }
 });
+
+document.querySelectorAll('.like-form').forEach(function(f) {
+    f.addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch(location.href, {
+            method: 'POST',
+            body: new FormData(f),
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        }).then(r => r.json()).then(data => {
+            if (data && 'likes' in data) {
+                const btn = f.querySelector('button[name="like_post"]');
+                btn.textContent = (data.liked ? 'Unlike' : 'Like') + ' (' + data.likes + ')';
+            }
+        });
+    });
+});
+
+document.querySelectorAll('.comment-form').forEach(function(f) {
+    f.addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch(location.href, {
+            method: 'POST',
+            body: new FormData(f),
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        }).then(r => r.json()).then(data => {
+            if (data && data.comment) {
+                const div = document.createElement('div');
+                div.className = 'border rounded p-2 mb-2';
+                div.style.background = 'var(--card-bg)';
+                div.textContent = data.comment;
+                f.parentNode.insertBefore(div, f);
+                f.reset();
+            }
+        });
+    });
+});
+
+const postForm = document.getElementById('postForm');
+if (postForm) {
+    postForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const fd = new FormData(postForm);
+        const wrap = document.getElementById('progressWrap');
+        const prog = document.getElementById('uploadProgress');
+        wrap.style.display = 'block';
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', location.href);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.upload.onprogress = function(ev) {
+            if (ev.lengthComputable) {
+                prog.value = ev.loaded / ev.total * 100;
+            }
+        };
+        xhr.onload = function() {
+            wrap.style.display = 'none';
+            prog.value = 0;
+            postForm.reset();
+            document.getElementById('preview').innerHTML = '';
+            location.reload();
+        };
+        xhr.send(fd);
+    });
+}
 </script>
 <?php include __DIR__ . '/../templates/footer.php'; ?>
