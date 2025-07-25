@@ -136,6 +136,7 @@ include __DIR__ . '/../templates/topbar.php';
                         <td><?= htmlspecialchars($event['description']) ?></td>
                         <td><?= htmlspecialchars($event['status'] ?? '') ?></td>
                         <td>
+                            <a href="view_guests.php?event_id=<?= $event['id'] ?>&lang=<?= $tr->getLang() ?>" class="btn btn-secondary btn-sm me-1"><?= htmlspecialchars($tr->t('view_guests')) ?></a>
                             <a href="event.php?event_id=<?= $event['id'] ?>&lang=<?= $tr->getLang() ?>" class="btn btn-accent btn-sm"><?= htmlspecialchars($tr->t('edit')) ?></a>
                             <a href="events.php?delete=<?= $event['id'] ?>&lang=<?= $tr->getLang() ?>" class="btn btn-danger btn-sm" onclick="return confirm('<?= htmlspecialchars($tr->t('delete_confirm')) ?>')"><i class="bi bi-trash"></i></a>
                         </td>

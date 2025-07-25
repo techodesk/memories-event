@@ -57,6 +57,9 @@ Each event page shows a QR code linking to the public event URL. You can regener
 ## Uploads Management
 Staff users can browse all uploaded memories on the **Uploads** page in the dashboard. Choose an event from the drop-down to see its files and download or delete them. No extra setup is required beyond the feed tables mentioned above.
 
+## Viewing Event Guests
+Click **View Guests** next to an event on the **Events** page to see everyone assigned to that event.
+
 ## Emailing Guests
 Use the **Email Guests** page in the sidebar to send messages to one or more guests. Select the recipients, enter a subject and message then click **Send**. SMTP credentials must be configured as described in the setup section.
 
