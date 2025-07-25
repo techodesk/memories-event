@@ -72,11 +72,9 @@ if (
         $mailersend->email->send($emailParams);
         $sent = true;
     } catch (MailerSendHttpException $e) {
-        $responseBody = '';
-        if ($e->getResponse()) {
-            $responseBody = $e->getResponse()->getBody()->getContents();
-        }
-        $error = $e->getMessage() . ($responseBody ? ' - ' . $responseBody : '');
+        // Avoid calling getResponse() since the library may not initialize the
+        // property correctly. Log just the exception message.
+        $error = $e->getMessage();
         error_log("[" . date('Y-m-d H:i:s') . "] " . $error . "\n", 3, $logFile);
     } catch (Exception $e) {
         $error = $e->getMessage();
