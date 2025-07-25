@@ -15,6 +15,8 @@ switch ($path) {
         require 'guest_portal.php'; break;
     case 'guests':
         require 'guests.php'; break;
+    case 'view_guests':
+        require 'view_guests.php'; break;
     case 'up':
         require 'uploads.php'; break;
     case 'news_admin':
