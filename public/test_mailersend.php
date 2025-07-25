@@ -7,10 +7,12 @@ use MailerSend\Helpers\Builder\EmailParams;
 use MailerSend\Helpers\Builder\Recipient;
 use MailerSend\Exceptions\MailerSendHttpException;
 
-$to = $argv[1] ?? null;
-if (!$to) {
-    echo "Usage: php test_mailersend.php recipient@example.com\n";
-    exit(1);
+// Get recipient from query parameter
+$to = $_GET['to'] ?? null;
+if (!$to || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
+    http_response_code(400);
+    echo "❌ Usage: ?to=recipient@example.com";
+    exit;
 }
 
 $msConf = $config['mailersend'];
@@ -22,16 +24,19 @@ try {
         ->setFrom($msConf['from_email'])
         ->setFromName($msConf['from_name'])
         ->setRecipients([new Recipient($to, 'Test User')])
-        ->setSubject('MailerSend API Test')
-        ->setText('This is a test email from test_mailersend.php')
-        ->setHtml('<p>This is a test email from test_mailersend.php</p>');
+        ->setSubject('MailerSend API Browser Test')
+        ->setText('This is a test email sent from a PHP script in the browser.')
+        ->setHtml('<p>This is a test email sent from a PHP script in the browser.</p>');
 
     $mailersend->email->send($emailParams);
-    echo "Message sent successfully!\n";
+
+    echo "✅ Message sent successfully to <strong>$to</strong>!";
 } catch (MailerSendHttpException $e) {
-    echo "MailerSend error: " . $e->getMessage() . "\n";
-    exit(1);
+    $response = method_exists($e, 'getResponse') && $e->getResponse()
+        ? $e->getResponse()->getBody()->getContents()
+        : $e->getMessage();
+
+    echo "❌ MailerSend API error:<br><pre>$response</pre>";
 } catch (Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
-    exit(1);
+    echo "❌ General error:<br><pre>" . htmlspecialchars($e->getMessage()) . "</pre>";
 }
