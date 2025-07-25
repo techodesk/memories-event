@@ -41,7 +41,7 @@ $guestIds = $idsStmt->fetchAll(PDO::FETCH_COLUMN);
 $added_guests = [];
 if ($guestIds) {
     $placeholders = implode(',', array_fill(0, count($guestIds), '?'));
-    $gStmt = $emPdo->prepare("SELECT id, name, email, invitation_code FROM guests WHERE id IN ($placeholders)");
+    $gStmt = $emPdo->prepare("SELECT id, name, email, invite_code FROM guests WHERE id IN ($placeholders)");
     $gStmt->execute($guestIds);
     $info = [];
     foreach ($gStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
@@ -71,6 +71,7 @@ include __DIR__ . '/../templates/topbar.php';
             <?= htmlspecialchars($tr->t('guests_for_this_event')) ?>: 
             <span class="text-accent"><?= htmlspecialchars($event['event_name']) ?></span>
         </h2>
+        <a href="send_email.php" class="btn btn-accent btn-sm mb-3">Email Guests</a>
         <div class="table-responsive mb-3">
             <table class="table table-dark table-hover align-middle mb-0" style="background: var(--card-bg);">
                 <thead>
@@ -85,7 +86,7 @@ include __DIR__ . '/../templates/topbar.php';
                     <tr>
                         <td><?= htmlspecialchars($g['name']) ?></td>
                         <td><?= htmlspecialchars($g['email']) ?></td>
-                        <td><?= htmlspecialchars($g['invitation_code']) ?></td>
+                        <td><?= htmlspecialchars($g['invite_code']) ?></td>
                     </tr>
                 <?php endforeach ?>
                 </tbody>
