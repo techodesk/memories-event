@@ -29,6 +29,17 @@ return [
         'cdn_url'   => 'https://HIDDEN.ams3.cdn.digitaloceanspaces.com',
     ],
 
+    // --- SMTP Settings ---
+    'smtp' => [
+        'host'       => 'smtp.office365.com',
+        'port'       => 587,
+        'encryption' => 'tls',
+        'username'   => 'user@example.com', // account with send-as rights
+        'password'   => 'HIDDEN',
+        'from_email' => 'shared@example.com',
+        'from_name'  => 'Memories Team',
+    ],
+
     // --- App Config (optional) ---
     'app' => [
         'env'       => 'development',

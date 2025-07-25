@@ -14,6 +14,7 @@ if (!isset($display_name)) $display_name = '';
         <a href="/news_stats" class="nav-link<?= strpos($_SERVER['REQUEST_URI'],'/news_stats')===0?' active':'' ?>"><i class="bi bi-bar-chart"></i> <span class="ms-2">News Stats</span></a>
         <a href="/forms_admin" class="nav-link<?= strpos($_SERVER['REQUEST_URI'],'/forms_admin')===0?' active':'' ?>"><i class="bi bi-ui-checks"></i> <span class="ms-2">Forms</span></a>
         <a href="/forms_results" class="nav-link<?= strpos($_SERVER['REQUEST_URI'],'/forms_results')===0?' active':'' ?>"><i class="bi bi-clipboard-data"></i> <span class="ms-2">Form Results</span></a>
+        <a href="/send_email" class="nav-link<?= strpos($_SERVER['REQUEST_URI'],'/send_email')===0?' active':'' ?>"><i class="bi bi-envelope"></i> <span class="ms-2">Email Guests</span></a>
         <a href="/tasks" class="nav-link<?= strpos($_SERVER['REQUEST_URI'],'/tasks')===0?' active':'' ?>"><i class="bi bi-list-task"></i> <span class="ms-2">Tasks</span></a>
     </div>
     <div class="sidebar-bottom">
