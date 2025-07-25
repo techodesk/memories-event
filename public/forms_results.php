@@ -56,13 +56,35 @@ foreach ($fields as $f) {
 }
 
 $subsStmt = $pdo->prepare(
-    'SELECT fs.*, g.name AS guest_name, g.email AS guest_email '
-    . 'FROM form_submissions fs '
-    . 'LEFT JOIN `'.$emDbConf['dbname'].'`.guests g ON fs.guest_id = g.id '
-    . 'WHERE fs.form_id=? ORDER BY fs.submitted_at DESC'
+    'SELECT * FROM form_submissions WHERE form_id=? ORDER BY submitted_at DESC'
 );
 $subsStmt->execute([$formId]);
 $submissions = $subsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch guest names/emails using the event manager connection
+$emPdo = new PDO(
+    "mysql:host={$emDbConf['host']};dbname={$emDbConf['dbname']};charset={$emDbConf['charset']}",
+    $emDbConf['user'],
+    $emDbConf['pass'],
+    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+);
+$guestMap = [];
+$guestIds = array_unique(array_filter(array_column($submissions, 'guest_id')));
+if ($guestIds) {
+    $placeholders = implode(',', array_fill(0, count($guestIds), '?'));
+    $gStmt = $emPdo->prepare("SELECT id, name, email FROM guests WHERE id IN ($placeholders)");
+    $gStmt->execute($guestIds);
+    foreach ($gStmt->fetchAll(PDO::FETCH_ASSOC) as $g) {
+        $guestMap[$g['id']] = $g;
+    }
+}
+foreach ($submissions as &$sub) {
+    if ($sub['guest_id'] && isset($guestMap[$sub['guest_id']])) {
+        $sub['guest_name']  = $guestMap[$sub['guest_id']]['name'];
+        $sub['guest_email'] = $guestMap[$sub['guest_id']]['email'];
+    }
+}
+unset($sub);
 foreach ($submissions as $s) {
     $data = json_decode($s['data'], true) ?: [];
     foreach ($stats as $fname => $opts) {
