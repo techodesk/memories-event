@@ -58,10 +58,10 @@ Each event page shows a QR code linking to the public event URL. You can regener
 Staff users can browse all uploaded memories on the **Uploads** page in the dashboard. Choose an event from the drop-down to see its files and download or delete them. No extra setup is required beyond the feed tables mentioned above.
 
 ## Viewing Event Guests
-Click **View Guests** next to an event on the **Events** page to see everyone assigned to that event.
+Click **View Guests** next to an event on the **Events** page to see everyone assigned to that event. The guest list screen now includes an **Email Guests** button that links directly to the email form.
 
 ## Emailing Guests
-Use the **Email Guests** page in the sidebar to send messages to one or more guests. Select the recipients, enter a subject and message then click **Send**. SMTP credentials must be configured as described in the setup section.
+Use the **Email Guests** page in the sidebar to send messages to one or more guests. You can also open this page from the **Email Guests** button on an event's guest list. Select the recipients, enter a subject and message then click **Send**. SMTP credentials must be configured as described in the setup section.
 
 ## Development Notes
 Run `php -l public/*.php` before committing to ensure there are no syntax errors.
