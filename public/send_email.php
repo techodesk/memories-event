@@ -6,10 +6,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 $config = require __DIR__ . '/../config/config.php';
 require __DIR__ . '/../vendor/autoload.php';
-use MailerSend\MailerSend;
-use MailerSend\Helpers\Builder\EmailParams;
-use MailerSend\Helpers\Builder\Recipient;
-use MailerSend\Exceptions\MailerSendHttpException;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 require_once __DIR__ . '/../src/guests/GuestManager.php';
 require_once __DIR__ . '/../src/guests/guest_helpers.php';
 require_once __DIR__ . '/../src/Translation.php';
@@ -43,7 +41,6 @@ if ($event_id) {
 
 $sent = false;
 $error = '';
-$logFile = __DIR__ . '/../logs/mailersend.log';
 
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST' &&
@@ -55,30 +52,29 @@ if (
     $stmt = $emPdo->prepare("SELECT name, email FROM guests WHERE id IN ($placeholders)");
     $stmt->execute($guestIds);
     $guests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $msConf = $config['mailersend'];
-    $recipients = [];
+    $smtp = $config['smtp'];
     foreach ($guests as $g) {
-        $recipients[] = new Recipient($g['email'], $g['name']);
+        try {
+            $mail = new PHPMailer(true);
+            $mail->isSMTP();
+            $mail->Host = $smtp['host'];
+            $mail->Port = $smtp['port'];
+            $mail->SMTPSecure = $smtp['encryption'];
+            $mail->SMTPAuth = true;
+            $mail->Username = $smtp['username'];
+            $mail->Password = $smtp['password'];
+            $mail->setFrom($smtp['from_email'], $smtp['from_name']);
+            $mail->addAddress($g['email'], $g['name']);
+            $mail->Subject = $_POST['subject'];
+            $mail->Body = $_POST['message'];
+            $mail->send();
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+            break;
+        }
     }
-    try {
-        $mailersend = new MailerSend(['api_key' => $msConf['api_key']]);
-        $emailParams = (new EmailParams())
-            ->setFrom($msConf['from_email'])
-            ->setFromName($msConf['from_name'])
-            ->setRecipients($recipients)
-            ->setSubject($_POST['subject'])
-            ->setHtml($_POST['message'])
-            ->setText(strip_tags($_POST['message']));
-        $mailersend->email->send($emailParams);
+    if (!$error) {
         $sent = true;
-    } catch (MailerSendHttpException $e) {
-        // Avoid calling getResponse() since the library may not initialize the
-        // property correctly. Log just the exception message.
-        $error = $e->getMessage();
-        error_log("[" . date('Y-m-d H:i:s') . "] " . $error . "\n", 3, $logFile);
-    } catch (Exception $e) {
-        $error = $e->getMessage();
-        error_log("[" . date('Y-m-d H:i:s') . "] " . $error . "\n", 3, $logFile);
     }
 }
 
