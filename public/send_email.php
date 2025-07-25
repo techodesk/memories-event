@@ -56,11 +56,11 @@ if (
     $msConf = $config['mailersend'];
     $recipients = [];
     foreach ($guests as $g) {
-        $recipients[] = new MailerSend\Helpers\Builder\Recipient($g['email'], $g['name']);
+        $recipients[] = new Recipient($g['email'], $g['name']);
     }
     try {
-        $mailersend = new MailerSend\MailerSend(['api_key' => $msConf['api_key']]);
-        $emailParams = (new MailerSend\Helpers\Builder\EmailParams())
+        $mailersend = new MailerSend(['api_key' => $msConf['api_key']]);
+        $emailParams = (new EmailParams())
             ->setFrom($msConf['from_email'])
             ->setFromName($msConf['from_name'])
             ->setRecipients($recipients)
