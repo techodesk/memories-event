@@ -71,7 +71,7 @@ include __DIR__ . '/../templates/topbar.php';
             <?= htmlspecialchars($tr->t('guests_for_this_event')) ?>: 
             <span class="text-accent"><?= htmlspecialchars($event['event_name']) ?></span>
         </h2>
-        <a href="send_email.php" class="btn btn-accent btn-sm mb-3">Email Guests</a>
+        <a href="send_email.php?event_id=<?= $event_id ?>" class="btn btn-accent btn-sm mb-3">Email Guests</a>
         <div class="table-responsive mb-3">
             <table class="table table-dark table-hover align-middle mb-0" style="background: var(--card-bg);">
                 <thead>
