@@ -6,6 +6,9 @@ if (!isset($_SESSION['user_id'])) {
 }
 $config = require __DIR__ . '/../config/config.php';
 require __DIR__ . '/../vendor/autoload.php';
+use MailerSend\MailerSend;
+use MailerSend\Helpers\Builder\EmailParams;
+use MailerSend\Helpers\Builder\Recipient;
 require_once __DIR__ . '/../src/guests/GuestManager.php';
 require_once __DIR__ . '/../src/guests/guest_helpers.php';
 require_once __DIR__ . '/../src/Translation.php';
@@ -50,29 +53,24 @@ if (
     $stmt = $emPdo->prepare("SELECT name, email FROM guests WHERE id IN ($placeholders)");
     $stmt->execute($guestIds);
     $guests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $smtp = $config['smtp'];
+    $msConf = $config['mailersend'];
+    $recipients = [];
     foreach ($guests as $g) {
-        try {
-            $mail = new PHPMailer\PHPMailer\PHPMailer(true);
-            $mail->isSMTP();
-            $mail->Host = $smtp['host'];
-            $mail->Port = $smtp['port'];
-            $mail->SMTPSecure = $smtp['encryption'];
-            $mail->SMTPAuth = true;
-            $mail->Username = $smtp['username'];
-            $mail->Password = $smtp['password'];
-            $mail->setFrom($smtp['from_email'], $smtp['from_name']);
-            $mail->addAddress($g['email'], $g['name']);
-            $mail->Subject = $_POST['subject'];
-            $mail->Body = $_POST['message'];
-            $mail->send();
-        } catch (Exception $e) {
-            $error = $e->getMessage();
-            break;
-        }
+        $recipients[] = new MailerSend\Helpers\Builder\Recipient($g['email'], $g['name']);
     }
-    if (!$error) {
+    try {
+        $mailersend = new MailerSend\MailerSend(['api_key' => $msConf['api_key']]);
+        $emailParams = (new MailerSend\Helpers\Builder\EmailParams())
+            ->setFrom($msConf['from_email'])
+            ->setFromName($msConf['from_name'])
+            ->setRecipients($recipients)
+            ->setSubject($_POST['subject'])
+            ->setHtml($_POST['message'])
+            ->setText(strip_tags($_POST['message']));
+        $mailersend->email->send($emailParams);
         $sent = true;
+    } catch (Exception $e) {
+        $error = $e->getMessage();
     }
 }
 

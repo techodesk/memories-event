@@ -40,6 +40,13 @@ return [
         'from_name'  => 'Memories Team',
     ],
 
+    // --- MailerSend Settings ---
+    'mailersend' => [
+        'api_key'    => 'HIDDEN',
+        'from_email' => 'noreply@example.com',
+        'from_name'  => 'Memories Team',
+    ],
+
     // --- App Config (optional) ---
     'app' => [
         'env'       => 'development',
