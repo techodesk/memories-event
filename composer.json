@@ -2,6 +2,12 @@
     "require": {
         "aws/aws-sdk-php": "^3.351",
         "endroid/qr-code": "~5.0",
-        "phpmailer/phpmailer": "^6.10"
+        "phpmailer/phpmailer": "^6.10",
+        "mailersend/mailersend": "^0.34.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     }
 }
