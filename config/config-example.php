@@ -42,11 +42,10 @@ return [
 
     // --- MailerSend Settings ---
     'mailersend' => [
-        'api_key'    => 'HIDDEN',
-        'from_email' => 'noreply@example.com',
+        'api_key'    => 'mlsn.631ec23c7bfd4e3e5e7649cfe899d728e8ccfcf6a54c4df8d0807b2804cd9cbf',
+        'from_email' => 'MS_AmGPKC@kaljusaar.vip',
         'from_name'  => 'Memories Team',
     ],
-
     // --- App Config (optional) ---
     'app' => [
         'env'       => 'development',
