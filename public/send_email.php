@@ -29,6 +29,14 @@ $tr = new Translation();
 $guestManager = new GuestManager($emPdo, $memPdo);
 $all_guests = $guestManager->fetchAllGuests();
 
+$event_id = isset($_GET['event_id']) ? intval($_GET['event_id']) : 0;
+$selected_guests = [];
+if ($event_id) {
+    $idsStmt = $memPdo->prepare('SELECT guest_id FROM event_guests WHERE event_id=?');
+    $idsStmt->execute([$event_id]);
+    $selected_guests = $idsStmt->fetchAll(PDO::FETCH_COLUMN);
+}
+
 $sent = false;
 $error = '';
 
@@ -86,7 +94,7 @@ include __DIR__ . '/../templates/topbar.php';
         <form method="post">
             <div class="mb-3">
                 <label class="form-label">Recipients</label>
-                <?php echo renderGuestSelectInput($all_guests); ?>
+                <?php echo renderGuestSelectInput($all_guests, $selected_guests); ?>
             </div>
             <div class="mb-3">
                 <label class="form-label">Subject</label>
