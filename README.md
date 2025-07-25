@@ -28,6 +28,7 @@ A simple PHP application for managing events and guests. This project is a small
 20. Run the SQL in `sql/alter_add_form_guest.sql` to associate form submissions with guests.
 21. View form submissions under **Form Results** and see which guests read each news post on the **News Stats** page. No additional setup is required.
 22. Configure the new `mailersend` settings in `config/config.php` to enable sending emails via MailerSend. Provide your API key and set `from_email` and `from_name` to the desired sender details.
+23. Errors returned by MailerSend are logged to `logs/mailersend.log`. Ensure the `logs` directory is writable.
 
 
 ## Running

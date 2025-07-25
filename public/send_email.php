@@ -9,6 +9,7 @@ require __DIR__ . '/../vendor/autoload.php';
 use MailerSend\MailerSend;
 use MailerSend\Helpers\Builder\EmailParams;
 use MailerSend\Helpers\Builder\Recipient;
+use MailerSend\Exceptions\MailerSendHttpException;
 require_once __DIR__ . '/../src/guests/GuestManager.php';
 require_once __DIR__ . '/../src/guests/guest_helpers.php';
 require_once __DIR__ . '/../src/Translation.php';
@@ -42,6 +43,7 @@ if ($event_id) {
 
 $sent = false;
 $error = '';
+$logFile = __DIR__ . '/../logs/mailersend.log';
 
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST' &&
@@ -69,8 +71,16 @@ if (
             ->setText(strip_tags($_POST['message']));
         $mailersend->email->send($emailParams);
         $sent = true;
+    } catch (MailerSendHttpException $e) {
+        $responseBody = '';
+        if ($e->getResponse()) {
+            $responseBody = $e->getResponse()->getBody()->getContents();
+        }
+        $error = $e->getMessage() . ($responseBody ? ' - ' . $responseBody : '');
+        error_log("[" . date('Y-m-d H:i:s') . "] " . $error . "\n", 3, $logFile);
     } catch (Exception $e) {
         $error = $e->getMessage();
+        error_log("[" . date('Y-m-d H:i:s') . "] " . $error . "\n", 3, $logFile);
     }
 }
 

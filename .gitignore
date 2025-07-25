@@ -29,6 +29,7 @@ nbproject/
 .cache/
 uploads/
 public/uploads/
+logs/
 *.bak
 
 # Ignore environment & secret config
