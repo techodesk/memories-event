@@ -31,12 +31,13 @@ return [
 
     // --- SMTP Settings ---
     'smtp' => [
-        'host'       => 'smtp.office365.com',
+        // Example Brevo SMTP settings
+        'host'       => 'smtp-relay.brevo.com',
         'port'       => 587,
         'encryption' => 'tls',
-        'username'   => 'user@example.com', // account with send-as rights
+        'username'   => 'user@example.com',
         'password'   => 'HIDDEN',
-        'from_email' => 'shared@example.com',
+        'from_email' => 'noreply@example.com',
         'from_name'  => 'Memories Team',
     ],
 

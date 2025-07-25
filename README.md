@@ -27,9 +27,7 @@ A simple PHP application for managing events and guests. This project is a small
 19. Run the SQL in `sql/alter_add_news_content_position.sql` to allow placing the news content between uploaded images.
 20. Run the SQL in `sql/alter_add_form_guest.sql` to associate form submissions with guests.
 21. View form submissions under **Form Results** and see which guests read each news post on the **News Stats** page. No additional setup is required.
-22. Configure the new `mailersend` settings in `config/config.php` to enable sending emails via MailerSend. Provide your API key and set `from_email` and `from_name` to the desired sender details.
-23. Errors returned by MailerSend are logged to `logs/mailersend.log`. Ensure the `logs` directory is writable.
-24. Run `php public/test_mailersend.php you@example.com` to send a test message and verify your MailerSend API connection.
+22. Configure the `smtp` settings in `config/config.php` to enable sending emails via SMTP. When using Brevo set `host` to `smtp-relay.brevo.com`, `port` to `587` and `encryption` to `tls`. Use your Brevo SMTP credentials and specify the desired `from_email` and `from_name`.
 
 
 ## Running
@@ -63,7 +61,7 @@ Staff users can browse all uploaded memories on the **Uploads** page in the dash
 Click **View Guests** next to an event on the **Events** page to see everyone assigned to that event. The guest list screen now includes an **Email Guests** button that links directly to the email form.
 
 ## Emailing Guests
-Use the **Email Guests** page in the sidebar to send messages to one or more guests. You can also open this page from the **Email Guests** button on an event's guest list. When opened this way the form automatically selects everyone assigned to that event. Select the recipients, enter a subject and message then click **Send**. MailerSend credentials must be configured as described in the setup section.
+Use the **Email Guests** page in the sidebar to send messages to one or more guests. You can also open this page from the **Email Guests** button on an event's guest list. When opened this way the form automatically selects everyone assigned to that event. Select the recipients, enter a subject and message then click **Send**. SMTP credentials must be configured as described in the setup section.
 
 ## Development Notes
 Run `php -l public/*.php` before committing to ensure there are no syntax errors.
