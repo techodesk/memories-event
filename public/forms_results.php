@@ -12,6 +12,7 @@ $pdo = new PDO(
     $memDbConf['pass'],
     [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
 );
+$emDbConf = $config['db_event_manager'];
 
 $formId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
@@ -54,7 +55,12 @@ foreach ($fields as $f) {
     }
 }
 
-$subsStmt = $pdo->prepare('SELECT * FROM form_submissions WHERE form_id=? ORDER BY submitted_at DESC');
+$subsStmt = $pdo->prepare(
+    'SELECT fs.*, g.name AS guest_name, g.email AS guest_email '
+    . 'FROM form_submissions fs '
+    . 'LEFT JOIN `'.$emDbConf['dbname'].'`.guests g ON fs.guest_id = g.id '
+    . 'WHERE fs.form_id=? ORDER BY fs.submitted_at DESC'
+);
 $subsStmt->execute([$formId]);
 $submissions = $subsStmt->fetchAll(PDO::FETCH_ASSOC);
 foreach ($submissions as $s) {
@@ -81,6 +87,7 @@ include __DIR__ . '/../templates/topbar.php';
                 <thead>
                     <tr>
                         <th>Submitted</th>
+                        <th>Guest</th>
 <?php foreach ($fields as $f): ?>
                         <th><?= htmlspecialchars($f['label']) ?></th>
 <?php endforeach ?>
@@ -90,6 +97,7 @@ include __DIR__ . '/../templates/topbar.php';
 <?php foreach ($submissions as $sub): $data = json_decode($sub['data'], true) ?: []; ?>
                     <tr>
                         <td><?= htmlspecialchars($sub['submitted_at']) ?></td>
+                        <td><?= htmlspecialchars($sub['guest_name'] ?? 'Anonymous') ?></td>
 <?php foreach ($fields as $f): ?>
                         <td><?= htmlspecialchars($data[$f['name']] ?? '') ?></td>
 <?php endforeach ?>
