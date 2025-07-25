@@ -50,11 +50,33 @@ $title = $stmt->fetchColumn();
 if (!$title) {
     die('News not found');
 }
-$readsStmt = $pdo->prepare('SELECT device_info FROM news_reads WHERE news_id=?');
+$readsStmt = $pdo->prepare('SELECT guest_id, device_info FROM news_reads WHERE news_id=?');
 $readsStmt->execute([$newsId]);
-$reads = $readsStmt->fetchAll(PDO::FETCH_COLUMN);
+$reads = $readsStmt->fetchAll(PDO::FETCH_ASSOC);
+$guestIds = array_column($reads, 'guest_id');
+$guestNames = [];
+if ($guestIds) {
+    $emDbConf = $config['db_event_manager'];
+    $emPdo = new PDO(
+        "mysql:host={$emDbConf['host']};dbname={$emDbConf['dbname']};charset={$emDbConf['charset']}",
+        $emDbConf['user'],
+        $emDbConf['pass'],
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+    );
+    $in = implode(',', array_fill(0, count($guestIds), '?'));
+    $gStmt = $emPdo->prepare("SELECT id,name FROM guests WHERE id IN ($in)");
+    $gStmt->execute($guestIds);
+    $tmp = $gStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    foreach ($guestIds as $gid) {
+        if (isset($tmp[$gid])) {
+            $guestNames[$tmp[$gid]] = true;
+        }
+    }
+    $guestNames = array_keys($guestNames);
+}
+$deviceData = array_column($reads, 'device_info');
 $devices = [];
-foreach ($reads as $ua) {
+foreach ($deviceData as $ua) {
     $dev = classify_device($ua ?: '');
     $devices[$dev] = ($devices[$dev] ?? 0) + 1;
 }
@@ -75,6 +97,14 @@ include __DIR__ . '/../templates/topbar.php';
             <li><?= htmlspecialchars($d) ?>: <?= $c ?></li>
 <?php endforeach ?>
         </ul>
+<?php if ($guestNames): ?>
+        <h5 class="mt-4">Readers</h5>
+        <ul>
+<?php foreach ($guestNames as $name): ?>
+            <li><?= htmlspecialchars($name) ?></li>
+<?php endforeach ?>
+        </ul>
+<?php endif ?>
     </div>
 </main>
 <?php include __DIR__ . '/../templates/footer.php'; ?>
