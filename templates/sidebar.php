@@ -11,7 +11,9 @@ if (!isset($display_name)) $display_name = '';
         
         <a href="/up" class="nav-link<?= strpos($_SERVER['REQUEST_URI'],'/up')===0?' active':'' ?>"><i class="bi bi-cloud-arrow-up"></i> <span class="ms-2">Uploads</span></a>
         <a href="/news_admin" class="nav-link<?= strpos($_SERVER['REQUEST_URI'],'/news_admin')===0?' active':'' ?>"><i class="bi bi-newspaper"></i> <span class="ms-2">News</span></a>
+        <a href="/news_stats" class="nav-link<?= strpos($_SERVER['REQUEST_URI'],'/news_stats')===0?' active':'' ?>"><i class="bi bi-bar-chart"></i> <span class="ms-2">News Stats</span></a>
         <a href="/forms_admin" class="nav-link<?= strpos($_SERVER['REQUEST_URI'],'/forms_admin')===0?' active':'' ?>"><i class="bi bi-ui-checks"></i> <span class="ms-2">Forms</span></a>
+        <a href="/forms_results" class="nav-link<?= strpos($_SERVER['REQUEST_URI'],'/forms_results')===0?' active':'' ?>"><i class="bi bi-clipboard-data"></i> <span class="ms-2">Form Results</span></a>
         <a href="/tasks" class="nav-link<?= strpos($_SERVER['REQUEST_URI'],'/tasks')===0?' active':'' ?>"><i class="bi bi-list-task"></i> <span class="ms-2">Tasks</span></a>
     </div>
     <div class="sidebar-bottom">

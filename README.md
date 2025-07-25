@@ -26,6 +26,7 @@ A simple PHP application for managing events and guests. This project is a small
 18. You can now edit or delete forms from the **Forms** page. Click *Edit* next to a form to modify its fields or remove it entirely.
 19. Run the SQL in `sql/alter_add_news_content_position.sql` to allow placing the news content between uploaded images.
 20. Run the SQL in `sql/alter_add_form_guest.sql` to associate form submissions with guests.
+21. View form submissions under **Form Results** and news device statistics on the **News Stats** page. No additional setup is required.
 
 
 ## Running
